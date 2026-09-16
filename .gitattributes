@@ -1,0 +1,4 @@
+* text=auto
+*.ino text
+*.json text
+*.pdsprj binary
