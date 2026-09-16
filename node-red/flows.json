@@ -1,0 +1,1007 @@
+[
+    {
+        "id": "4b8bea3d1e25ea78",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "b68f2e9d50a4675f",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "broker.hivemq.com",
+        "port": 1883,
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "661e912b06371fe8",
+        "type": "ui_tab",
+        "name": "Analyse Management",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "694b4a4ec6540cb2",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "d2ca4264c146f130",
+        "type": "ui_group",
+        "name": "TRS",
+        "tab": "661e912b06371fe8",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "18c2a64c07f9e2eb",
+        "type": "ui_tab",
+        "name": "Pilotage Operateur",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "1bf2602bd67f085b",
+        "type": "ui_group",
+        "name": "Etat machine",
+        "tab": "18c2a64c07f9e2eb",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "3a66ad4f588f5c93",
+        "type": "mqtt in",
+        "z": "4b8bea3d1e25ea78",
+        "name": "ROUFIX Data",
+        "topic": "roufix/machine1/data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "b68f2e9d50a4675f",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 630,
+        "y": 440,
+        "wires": [
+            [
+                "45904f3374764126",
+                "4cbcc10437753e70",
+                "fa6b4c2b10f33e72",
+                "2d66cb75f53c35d5"
+            ]
+        ]
+    },
+    {
+        "id": "45904f3374764126",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "4cbcc10437753e70",
+        "type": "switch",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "property": "payload.type_message = \"evenement\" and payload.etat = \"ATTENTE\" and payload.duree_cycle > 0",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 870,
+        "y": 500,
+        "wires": [
+            [
+                "50f2d7bb356d5734"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "50f2d7bb356d5734",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Compteur pieces",
+        "func": "// Récupère le compteur, ou 0 s'il n'existe pas encore\nlet compteur = flow.get(\"nb_pieces\") || 0;\ncompteur++;\nflow.set(\"nb_pieces\", compteur);\n\n// Cumule le temps de production\nlet tempsProd = flow.get(\"temps_production\") || 0;\ntempsProd += msg.payload.duree_cycle;\nflow.set(\"temps_production\", tempsProd);\n\n// Prépare le message de sortie\nmsg.payload = {\n    nb_pieces: compteur,\n    dernier_cycle: msg.payload.duree_cycle,\n    temps_production_total: tempsProd\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 460,
+        "wires": [
+            [
+                "002454ae8ee76ace",
+                "f0749c32ea6a918f",
+                "2ef55a303b388e2e"
+            ]
+        ]
+    },
+    {
+        "id": "002454ae8ee76ace",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1300,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "c4837e96f1671b83",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Fin de poste",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 06 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 700,
+        "y": 760,
+        "wires": [
+            [
+                "e8671ad50e8bf5bd"
+            ]
+        ]
+    },
+    {
+        "id": "e8671ad50e8bf5bd",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Preparer archive",
+        "func": "const nbPieces = flow.get(\"nb_pieces\") || 0;\nconst tempsProd = flow.get(\"temps_production\") || 0;\nconst maintenant = new Date();\n\n// Temps de cycle moyen (protection contre division par zéro)\nconst cycleMoyen = nbPieces > 0 ? Math.round(tempsProd / nbPieces) : 0;\n\nmsg.payload = maintenant.toISOString() + \";\"\n            + nbPieces + \";\"\n            + tempsProd + \";\"\n            + cycleMoyen + \"\\n\";\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 820,
+        "wires": [
+            [
+                "14520571fa4f4805"
+            ]
+        ]
+    },
+    {
+        "id": "14520571fa4f4805",
+        "type": "file",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "filename": "C:/Users/GM Louay/OneDrive/Documents/roufix_historique.csv",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 1070,
+        "y": 880,
+        "wires": [
+            [
+                "a268ea1017fc75b4"
+            ]
+        ]
+    },
+    {
+        "id": "a268ea1017fc75b4",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "RAZ compteurs",
+        "func": "flow.set(\"nb_pieces\", 0);\nflow.set(\"temps_production\", 0);\nflow.set(\"debut_poste\", Date.now());   // ← nouvelle ligne\n\nnode.warn(\"Compteurs remis a zero - nouveau poste demarre\");\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1340,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f0749c32ea6a918f",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Calcul TRS",
+        "func": "const TEMPS_CYCLE_THEORIQUE = 5200;  // ms, mesuré sur le terrain\n\nconst nbPieces = flow.get(\"nb_pieces\") || 0;\nconst tempsProd = flow.get(\"temps_production\") || 0;\nlet debutPoste = flow.get(\"debut_poste\");\n\n// Si le poste n'a jamais été initialisé, on le démarre maintenant\nif (!debutPoste) {\n    debutPoste = Date.now();\n    flow.set(\"debut_poste\", debutPoste);\n}\n\nconst tempsRequis = Date.now() - debutPoste;\n\n// Disponibilité : temps de production / temps écoulé depuis le début du poste\nconst dispo = tempsRequis > 0 ? (tempsProd / tempsRequis) : 0;\n\n// Performance : production idéale / production réelle\nconst perf = tempsProd > 0 ? ((nbPieces * TEMPS_CYCLE_THEORIQUE) / tempsProd) : 0;\n\n// Qualité : hypothèse, pas de capteur de rebut\nconst qualite = 1;\n\nconst trs = dispo * perf * qualite;\n\nmsg.payload = {\n    nb_pieces: nbPieces,\n    disponibilite: Math.round(dispo * 1000) / 10,   // en %\n    performance: Math.round(perf * 1000) / 10,\n    qualite: qualite * 100,\n    trs: Math.round(trs * 1000) / 10,\n    temps_poste_min: Math.round(tempsRequis / 60000)\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1310,
+        "y": 560,
+        "wires": [
+            [
+                "d4ec7cbe1b795c53",
+                "4889b69749e1f9a4",
+                "a77a175ca1aada56",
+                "3899d823f47eb0dd",
+                "f0b74a41c4133863",
+                "25f3273fe7b23dfa"
+            ]
+        ]
+    },
+    {
+        "id": "d4ec7cbe1b795c53",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1520,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "f9936fdd8cd37446",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Refresh TRS",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 980,
+        "y": 680,
+        "wires": [
+            [
+                "f0749c32ea6a918f"
+            ]
+        ]
+    },
+    {
+        "id": "4889b69749e1f9a4",
+        "type": "ui_gauge",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "group": "d2ca4264c146f130",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "TRS Global",
+        "label": "%",
+        "format": "{{msg.payload.trs}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#f10909",
+            "#f4870b",
+            "#08e70c"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1550,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "f0b74a41c4133863",
+        "type": "ui_gauge",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "group": "d2ca4264c146f130",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Disponibilité",
+        "label": "%",
+        "format": "{{msg.payload.disponibilite}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#f10909",
+            "#f4870b",
+            "#08e70c"
+        ],
+        "seg1": "75",
+        "seg2": "85",
+        "diff": false,
+        "className": "",
+        "x": 1570,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "3899d823f47eb0dd",
+        "type": "ui_gauge",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "group": "d2ca4264c146f130",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Qualité",
+        "label": "%",
+        "format": "{{msg.payload.qualite}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#24f109",
+            "#1fe411",
+            "#08e70c"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1560,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "a77a175ca1aada56",
+        "type": "ui_gauge",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "group": "d2ca4264c146f130",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Performance",
+        "label": "%",
+        "format": "{{msg.payload.performance}}",
+        "min": 0,
+        "max": "150",
+        "colors": [
+            "#f10909",
+            "#0bd022",
+            "#120edd"
+        ],
+        "seg1": "75",
+        "seg2": "100",
+        "diff": false,
+        "className": "",
+        "x": 1550,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "25f3273fe7b23dfa",
+        "type": "ui_text",
+        "z": "4b8bea3d1e25ea78",
+        "group": "d2ca4264c146f130",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Pieces produites",
+        "format": "{{msg.payload.nb_pieces}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1560,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "72c4209a18d41fdf",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Note qualite",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 970,
+        "y": 1020,
+        "wires": [
+            [
+                "75b4cc78ce2aa984"
+            ]
+        ]
+    },
+    {
+        "id": "75b4cc78ce2aa984",
+        "type": "change",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Texte note qualite",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "Note : en l'absence de capteur de rebut, la qualite est supposee a 100%",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1190,
+        "y": 1020,
+        "wires": [
+            [
+                "51c659b90bebcb81"
+            ]
+        ]
+    },
+    {
+        "id": "51c659b90bebcb81",
+        "type": "ui_text",
+        "z": "4b8bea3d1e25ea78",
+        "group": "d2ca4264c146f130",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Note qualite",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1430,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "fa6b4c2b10f33e72",
+        "type": "ui_text",
+        "z": "4b8bea3d1e25ea78",
+        "group": "1bf2602bd67f085b",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Etat actuel",
+        "format": "{{msg.payload.etat}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 810,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "2d66cb75f53c35d5",
+        "type": "trigger",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "op1": "COMMUNICATION OK",
+        "op2": "PERTE DE COMMUNICATION",
+        "op1type": "str",
+        "op2type": "str",
+        "duration": "45",
+        "extend": true,
+        "overrideDelay": false,
+        "units": "s",
+        "reset": "",
+        "bytopic": "all",
+        "topic": "topic",
+        "outputs": 1,
+        "x": 810,
+        "y": 300,
+        "wires": [
+            [
+                "a4e30642e7de15c8"
+            ]
+        ]
+    },
+    {
+        "id": "a4e30642e7de15c8",
+        "type": "ui_text",
+        "z": "4b8bea3d1e25ea78",
+        "group": "1bf2602bd67f085b",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Communication",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1080,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "2ef55a303b388e2e",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Detection derive",
+        "func": "// --- Paramètres ---\nconst N_BASELINE = 10;        // 30-50 en production\nconst K_SIGMA = 3;            // limites à ±3σ (règle classique SPC)\n\nconst cycle = msg.payload.dernier_cycle;\n\n// --- Phase 1 : apprentissage ---\nlet baseline = flow.get(\"baseline\") || [];\nlet limites = flow.get(\"limites_spc\");\n\nif (!limites) {\n    baseline.push(cycle);\n    flow.set(\"baseline\", baseline);\n\n    if (baseline.length < N_BASELINE) {\n        msg.payload = {\n            phase: \"APPRENTISSAGE\",\n            progression: baseline.length + \"/\" + N_BASELINE,\n            statut: \"OK\"\n        };\n        return msg;\n    }\n\n    // Calcul de la moyenne et de l'écart-type\n    const moyenne = baseline.reduce((a, b) => a + b, 0) / baseline.length;\n    const variance = baseline.reduce((a, b) => a + Math.pow(b - moyenne, 2), 0) / baseline.length;\n    const ecartType = Math.sqrt(variance);\n\n    limites = {\n        moyenne: Math.round(moyenne),\n        sigma: Math.round(ecartType),\n        LSC: Math.round(moyenne + K_SIGMA * ecartType),\n        LIC: Math.round(moyenne - K_SIGMA * ecartType)\n    };\n    flow.set(\"limites_spc\", limites);\n\n    node.warn(\"Baseline etablie : moyenne=\" + limites.moyenne + \"ms, sigma=\" + limites.sigma);\n}\n\n// --- Phase 2 : contrôle sur limites figées ---\nlet statut = \"OK\";\nlet alerte = false;\n\nif (cycle > limites.LSC) {\n    statut = \"DERIVE HAUTE - cycle trop long\";\n    alerte = true;\n} else if (cycle < limites.LIC) {\n    statut = \"DERIVE BASSE - cycle anormalement court\";\n    alerte = true;\n}\n\n// Détection de tendance : 7 points consécutifs du même côté\nlet tendance = flow.get(\"tendance\") || 0;\nif (cycle > limites.moyenne) {\n    tendance = tendance > 0 ? tendance + 1 : 1;\n} else {\n    tendance = tendance < 0 ? tendance - 1 : -1;\n}\nflow.set(\"tendance\", tendance);\n\nif (Math.abs(tendance) >= 7 && !alerte) {\n    statut = \"TENDANCE - \" + Math.abs(tendance) + \" cycles consecutifs \"\n        + (tendance > 0 ? \"au-dessus\" : \"en-dessous\") + \" de la moyenne\";\n    alerte = true;\n}\n\nmsg.payload = {\n    phase: \"CONTROLE\",\n    cycle: cycle,\n    moyenne: limites.moyenne,\n    LSC: limites.LSC,\n    LIC: limites.LIC,\n    statut: statut,\n    alerte: alerte\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1300,
+        "y": 360,
+        "wires": [
+            [
+                "8cefd8802f9cd19d",
+                "02ac76553727214e"
+            ]
+        ]
+    },
+    {
+        "id": "8cefd8802f9cd19d",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1500,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "02ac76553727214e",
+        "type": "switch",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Filtre alertes",
+        "property": "payload.alerte",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 1530,
+        "y": 240,
+        "wires": [
+            [
+                "dda168f5d64abfee",
+                "4e3cea908607512a"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "dda168f5d64abfee",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1740,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "4e3cea908607512a",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Preparer prompt IA",
+        "func": "const PROMPT_SYSTEME = `Tu es un expert en maintenance industrielle, specialise sur la machine de rognage de cables ROUFIX.\nArchitecture ROUFIX : deux moteurs DC (M1 disque abrasif, M2 entrainement cable), un verin pneumatique de fixation, temporisation de rognage de 3 secondes.\nTu assistes un technicien de nuit face a une derive statistique (carte de controle SPC) sur les temps de cycle.\nCONTRAINTES ABSOLUES :\n1. Reponds EXCLUSIVEMENT en JSON valide.\n2. AUCUN texte avant ou apres, AUCUNE balise markdown.\n3. Chaque champ : 15 mots maximum.\n4. 2 a 3 causes maximum, par probabilite decroissante, basees uniquement sur les composants reels de ROUFIX.\nFormat exact :\n{\"anomalie\":\"...\",\"causes_probables\":[\"...\",\"...\"],\"action_immediate\":\"...\"}`;\n\nconst donnees = `\nDONNEES DE L'ALERTE :\n- Statut detecte : ${msg.payload.statut}\n- Temps de cycle actuel : ${msg.payload.cycle} ms\n- Moyenne de reference : ${msg.payload.moyenne} ms\n- Limite superieure (LSC) : ${msg.payload.LSC} ms\n- Limite inferieure (LIC) : ${msg.payload.LIC} ms\n- Ecart : ${msg.payload.cycle - msg.payload.moyenne} ms`;\n\nmsg.payload = {\n    model: \"llama3.2\",\n    prompt: PROMPT_SYSTEME + donnees,\n    stream: false,\n    keep_alive: -1\n};\nmsg.requestTimeout = 40000;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1770,
+        "y": 180,
+        "wires": [
+            [
+                "b8fbb27e26bb2ce1"
+            ]
+        ]
+    },
+    {
+        "id": "b8fbb27e26bb2ce1",
+        "type": "http request",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Ollama",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:11434/api/generate",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1940,
+        "y": 240,
+        "wires": [
+            [
+                "4252840c2aa5036c",
+                "5b96b50bc374de10"
+            ]
+        ]
+    },
+    {
+        "id": "5b96b50bc374de10",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2140,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "4252840c2aa5036c",
+        "type": "json",
+        "z": "4b8bea3d1e25ea78",
+        "name": "",
+        "property": "payload.response",
+        "action": "",
+        "pretty": false,
+        "x": 2130,
+        "y": 160,
+        "wires": [
+            [
+                "7d0be6929833176c"
+            ]
+        ]
+    },
+    {
+        "id": "0d0c7220e86f7bb4",
+        "type": "catch",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Erreur IA",
+        "scope": [
+            "b8fbb27e26bb2ce1"
+        ],
+        "uncaught": false,
+        "x": 2100,
+        "y": 80,
+        "wires": [
+            [
+                "432854d0791e709a"
+            ]
+        ]
+    },
+    {
+        "id": "432854d0791e709a",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Fallback IA",
+        "func": "msg.payload = {\n    response: {\n        anomalie: \"Diagnostic IA local injoignable (timeout ou service arrete).\",\n        causes_probables: [\n            \"Service Ollama arrete\",\n            \"Surcharge processeur\"\n        ],\n        action_immediate: \"IA INDISPONIBLE - APPLIQUER LA GAMME DE MAINTENANCE STANDARD (Niv. 1)\"\n    }\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2310,
+        "y": 120,
+        "wires": [
+            [
+                "7d0be6929833176c"
+            ]
+        ]
+    },
+    {
+        "id": "7d0be6929833176c",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Extraire diagnostic",
+        "func": "// Cas 1 : reponse valide de l'IA\nif (msg.payload && msg.payload.response && msg.payload.response.anomalie) {\n    msg.payload = msg.payload.response;\n    return msg;\n}\n\n// Cas 2 : erreur ou reponse malformee -> fallback\nmsg.payload = {\n    anomalie: \"Diagnostic IA local injoignable.\",\n    causes_probables: [\n        \"Service Ollama arrete\",\n        \"Surcharge processeur\"\n    ],\n    action_immediate: \"IA INDISPONIBLE - APPLIQUER LA GAMME DE MAINTENANCE STANDARD (Niv. 1)\"\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2430,
+        "y": 240,
+        "wires": [
+            [
+                "5b7c3af83c67bcca"
+            ]
+        ]
+    },
+    {
+        "id": "444928644cfb19c6",
+        "type": "ui_template",
+        "z": "4b8bea3d1e25ea78",
+        "group": "1bf2602bd67f085b",
+        "name": "Fiche diagnostic IA",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "format": "<!--\n  ROUFIX — panneau de supervision\n  Node-RED dashboard 1.x — nœud ui_template (scope: Widget)\n\n  CONFIG DU NŒUD (obligatoire, sinon la scrollbar revient) :\n    Size  →  largeur : auto ou 12   |   hauteur : 0  (= auto)\n    Group →  décocher \"Display group name\" si tu veux le rendu plein cadre\n    Cocher \"Add output messages to...\" si tu utilises le bouton d'acquittement\n\n  PAYLOAD ATTENDU (voir roufix-payload-exemple.js) :\n    msg.payload.machine            \"ROUFIX 01\"\n    msg.payload.etat               \"MARCHE\" | \"ATTENTE\" | \"DEFAUT\" | \"ARRET\"\n    msg.payload.communication      true / false\n    msg.payload.cycle              \"M1\"\n    msg.payload.cadence            \"42 pcs/h\"\n    msg.payload.horodatage         \"14:32:07\"\n    msg.payload.anomalie           texte, ou vide/absent si tout va bien\n    msg.payload.causes_probables   tableau de chaînes\n    msg.payload.action_immediate   texte\n    msg.payload.criticite          \"haute\" | \"moyenne\" | \"basse\"\n-->\n\n<div class=\"rfx\" ng-class=\"'rfx--' + (msg.payload.etat || 'INCONNU' | lowercase)\">\n\n    <style>\n        .rfx {\n            --rfx-ink: #12161c;\n            --rfx-panel: #1a1f27;\n            --rfx-panel-2: #212831;\n            --rfx-line: rgba(255, 255, 255, .08);\n            --rfx-line-2: rgba(255, 255, 255, .14);\n            --rfx-text: #e6eaf0;\n            --rfx-muted: #8b94a3;\n            --rfx-faint: #626b79;\n\n            --rfx-green: #3fbf7f;\n            --rfx-amber: #f0a93b;\n            --rfx-red: #f2555a;\n            --rfx-blue: #6ea8ff;\n\n            --rfx-state: var(--rfx-faint);\n\n            font-family: \"Inter\", \"Roboto\", -apple-system, \"Segoe UI\", sans-serif;\n            color: var(--rfx-text);\n            background: var(--rfx-ink);\n            border-radius: 10px;\n            overflow: hidden;\n            display: block;\n        }\n\n        .rfx--marche {\n            --rfx-state: var(--rfx-green);\n        }\n\n        .rfx--attente {\n            --rfx-state: var(--rfx-amber);\n        }\n\n        .rfx--defaut {\n            --rfx-state: var(--rfx-red);\n        }\n\n        .rfx--arret {\n            --rfx-state: var(--rfx-faint);\n        }\n\n        /* ---- bandeau d'en-tête : le rail de statut est la signature du panneau ---- */\n        .rfx-head {\n            display: flex;\n            align-items: center;\n            gap: 12px;\n            padding: 14px 16px;\n            background: var(--rfx-panel);\n            border-bottom: 1px solid var(--rfx-line);\n            border-left: 3px solid var(--rfx-state);\n        }\n\n        .rfx-head__name {\n            font-size: 15px;\n            font-weight: 500;\n            letter-spacing: .01em;\n            margin: 0;\n            flex: 1;\n        }\n\n        .rfx-head__time {\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 12px;\n            color: var(--rfx-faint);\n            font-variant-numeric: tabular-nums;\n        }\n\n        .rfx-pill {\n            display: inline-flex;\n            align-items: center;\n            gap: 7px;\n            padding: 4px 11px 4px 9px;\n            border: 1px solid var(--rfx-state);\n            border-radius: 999px;\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 11px;\n            letter-spacing: .09em;\n            color: var(--rfx-state);\n            white-space: nowrap;\n        }\n\n        .rfx-dot {\n            width: 6px;\n            height: 6px;\n            border-radius: 50%;\n            background: var(--rfx-state);\n            flex: none;\n        }\n\n        .rfx--marche .rfx-dot {\n            animation: rfx-pulse 2s ease-in-out infinite;\n        }\n\n        @keyframes rfx-pulse {\n            50% {\n                opacity: .25;\n            }\n        }\n\n        @media (prefers-reduced-motion: reduce) {\n            .rfx--marche .rfx-dot {\n                animation: none;\n            }\n        }\n\n        /* ---- tuiles de mesure ---- */\n        .rfx-grid {\n            display: grid;\n            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));\n            gap: 1px;\n            background: var(--rfx-line);\n            border-bottom: 1px solid var(--rfx-line);\n        }\n\n        .rfx-tile {\n            background: var(--rfx-panel);\n            padding: 13px 16px;\n        }\n\n        .rfx-tile__label {\n            margin: 0 0 6px;\n            font-size: 10px;\n            letter-spacing: .13em;\n            text-transform: uppercase;\n            color: var(--rfx-faint);\n        }\n\n        .rfx-tile__value {\n            margin: 0;\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 17px;\n            font-weight: 500;\n            letter-spacing: .02em;\n            font-variant-numeric: tabular-nums;\n        }\n\n        .rfx-tile__value--state {\n            color: var(--rfx-state);\n        }\n\n        .rfx-tile__value--ok {\n            color: var(--rfx-green);\n        }\n\n        .rfx-tile__value--ko {\n            color: var(--rfx-red);\n        }\n\n        /* ---- bloc diagnostic ---- */\n        .rfx-diag {\n            padding: 16px;\n        }\n\n        .rfx-diag__head {\n            display: flex;\n            align-items: center;\n            gap: 8px;\n            margin-bottom: 14px;\n        }\n\n        .rfx-diag__title {\n            margin: 0;\n            flex: 1;\n            font-size: 10px;\n            letter-spacing: .13em;\n            text-transform: uppercase;\n            color: var(--rfx-muted);\n        }\n\n        .rfx-badge {\n            font-size: 10px;\n            letter-spacing: .08em;\n            text-transform: uppercase;\n            padding: 3px 9px;\n            border-radius: 4px;\n            background: rgba(242, 85, 90, .13);\n            color: var(--rfx-red);\n        }\n\n        .rfx-badge--moyenne {\n            background: rgba(240, 169, 59, .13);\n            color: var(--rfx-amber);\n        }\n\n        .rfx-badge--basse {\n            background: rgba(110, 168, 255, .13);\n            color: var(--rfx-blue);\n        }\n\n        .rfx-anomalie {\n            margin: 0 0 16px;\n            font-size: 15px;\n            line-height: 1.45;\n        }\n\n        .rfx-causes {\n            list-style: none;\n            margin: 0 0 16px;\n            padding: 0;\n        }\n\n        .rfx-causes li {\n            display: flex;\n            gap: 11px;\n            align-items: baseline;\n            padding: 10px 0;\n            border-top: 1px solid var(--rfx-line);\n            font-size: 13.5px;\n            line-height: 1.45;\n            color: #c9d0da;\n        }\n\n        .rfx-causes li:last-child {\n            border-bottom: 1px solid var(--rfx-line);\n        }\n\n        .rfx-causes__idx {\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 11px;\n            color: var(--rfx-faint);\n            flex: none;\n        }\n\n        .rfx-action {\n            background: var(--rfx-panel-2);\n            border-left: 3px solid var(--rfx-red);\n            padding: 12px 14px;\n        }\n\n        .rfx-action__label {\n            margin: 0 0 5px;\n            font-size: 10px;\n            letter-spacing: .13em;\n            text-transform: uppercase;\n            color: var(--rfx-red);\n        }\n\n        .rfx-action__text {\n            margin: 0;\n            font-size: 14px;\n            line-height: 1.45;\n        }\n\n        .rfx-ack {\n            margin-top: 14px;\n            width: 100%;\n            background: transparent;\n            border: 1px solid var(--rfx-line-2);\n            border-radius: 6px;\n            color: var(--rfx-text);\n            padding: 9px 14px;\n            font-family: inherit;\n            font-size: 13px;\n            cursor: pointer;\n            transition: background .15s ease, border-color .15s ease;\n        }\n\n        .rfx-ack:hover {\n            background: var(--rfx-panel-2);\n            border-color: var(--rfx-muted);\n        }\n\n        .rfx-ack:active {\n            transform: scale(.99);\n        }\n\n        .rfx-ack:focus-visible {\n            outline: 2px solid var(--rfx-blue);\n            outline-offset: 2px;\n        }\n\n        /* ---- état sain ---- */\n        .rfx-clear {\n            display: flex;\n            align-items: center;\n            gap: 10px;\n            padding: 18px 16px;\n            font-size: 14px;\n            color: var(--rfx-muted);\n        }\n\n        .rfx-clear__dot {\n            width: 7px;\n            height: 7px;\n            border-radius: 50%;\n            background: var(--rfx-green);\n            flex: none;\n        }\n\n        /* neutralise le cadre du widget Node-RED */\n        .nr-dashboard-template {\n            overflow: visible !important;\n            padding: 0 !important;\n        }\n    </style>\n\n    <div class=\"rfx-head\">\n        <span class=\"rfx-dot\"></span>\n        <h3 class=\"rfx-head__name\">{{msg.payload.machine || 'ROUFIX'}}</h3>\n        <span class=\"rfx-head__time\">{{msg.payload.horodatage}}</span>\n    </div>\n\n    <div class=\"rfx-grid\">\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">État actuel</p>\n            <p class=\"rfx-tile__value rfx-tile__value--state\">{{msg.payload.etat || '—'}}</p>\n        </div>\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">Communication</p>\n            <p class=\"rfx-tile__value\"\n                ng-class=\"msg.payload.communication ? 'rfx-tile__value--ok' : 'rfx-tile__value--ko'\">\n                {{msg.payload.communication ? 'OK' : 'COUPÉE'}}\n            </p>\n        </div>\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">Cycle</p>\n            <p class=\"rfx-tile__value\">{{msg.payload.cycle || '—'}}</p>\n        </div>\n        <div class=\"rfx-tile\" ng-if=\"msg.payload.cadence\">\n            <p class=\"rfx-tile__label\">Cadence</p>\n            <p class=\"rfx-tile__value\">{{msg.payload.cadence}}</p>\n        </div>\n    </div>\n\n    <div class=\"rfx-diag\" ng-if=\"msg.payload.anomalie\">\n        <div class=\"rfx-diag__head\">\n            <p class=\"rfx-diag__title\">Diagnostic IA</p>\n            <span class=\"rfx-badge\"\n            ng-class=\"'rfx-badge--' + (msg.payload.criticite || 'haute')\">\n        {{msg.payload.criticite || 'haute'}}\n      </span>\n        </div>\n\n        <p class=\"rfx-anomalie\">{{msg.payload.anomalie}}</p>\n\n        <ul class=\"rfx-causes\" ng-if=\"msg.payload.causes_probables.length\">\n            <li ng-repeat=\"cause in msg.payload.causes_probables track by $index\">\n                <span class=\"rfx-causes__idx\">{{$index + 1}}</span>\n                <span>{{cause}}</span>\n            </li>\n        </ul>\n\n        <div class=\"rfx-action\" ng-if=\"msg.payload.action_immediate\">\n            <p class=\"rfx-action__label\">Action immédiate</p>\n            <p class=\"rfx-action__text\">{{msg.payload.action_immediate}}</p>\n        </div>\n\n        <button class=\"rfx-ack\"\n            ng-click=\"send({topic: 'acquittement', payload: msg.payload.anomalie})\">\n      Marquer comme traité\n    </button>\n    </div>\n\n    <div class=\"rfx-clear\" ng-if=\"!msg.payload.anomalie\">\n        <span class=\"rfx-clear__dot\"></span>\n        <span>Aucune anomalie détectée sur ce cycle.</span>\n    </div>\n\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 2710,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5b7c3af83c67bcca",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Construire payload IHM",
+        "func": "// Nœud function à placer juste avant le ui_template.\n// Il fusionne l'état automate et la sortie du diagnostic IA en un seul objet,\n// pour que le template n'ait qu'une seule source de vérité à afficher.\n\nconst etat = flow.get(\"etat_machine\") || {};\nconst diag = flow.get(\"diagnostic_ia\") || {};\n\nconst now = new Date();\nconst hh = String(now.getHours()).padStart(2, \"0\");\nconst mm = String(now.getMinutes()).padStart(2, \"0\");\nconst ss = String(now.getSeconds()).padStart(2, \"0\");\n\nmsg.payload = {\n    machine: \"ROUFIX 01\",\n\n    // MARCHE | ATTENTE | DEFAUT | ARRET  → pilote la couleur du rail et du pill\n    etat: etat.etat || \"ATTENTE\",\n    communication: etat.communication !== false,\n    cycle: etat.cycle || \"M1\",\n    cadence: etat.cadence || null,        // null → la tuile disparaît\n    horodatage: `${hh}:${mm}:${ss}`,\n\n    // Bloc diagnostic. Si anomalie est vide ou absent,\n    // le template bascule tout seul sur l'état \"aucune anomalie\".\n    anomalie: diag.anomalie || \"\",\n    causes_probables: diag.causes_probables || [],\n    action_immediate: diag.action_immediate || \"\",\n    criticite: diag.criticite || \"haute\"  // haute | moyenne | basse\n};\n\nreturn msg;\n\n// Côté flux : stocke l'état automate avec un function node en amont\n//   flow.set(\"etat_machine\", { etat: \"ATTENTE\", communication: true, cycle: \"M1\" });\n// et la réponse de l'IA avec\n//   flow.set(\"diagnostic_ia\", JSON.parse(msg.payload));",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2650,
+        "y": 320,
+        "wires": [
+            [
+                "444928644cfb19c6"
+            ]
+        ]
+    },
+    {
+        "id": "89a84d0ca7abf130",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Test diagnostic",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"anomalie\":\"Derive haute - cycle trop long\",\"causes_probables\":[\"Usure du disque abrasif M1\",\"Verin pneumatique lent\"],\"action_immediate\":\"Verifier l'usure du disque abrasif\"}",
+        "payloadType": "json",
+        "x": 2400,
+        "y": 420,
+        "wires": [
+            [
+                "444928644cfb19c6"
+            ]
+        ]
+    },
+    {
+        "id": "aaf643ae104a6731",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    }
+]
