@@ -8,9 +8,9 @@ data ever left the machine. This repository contains the four-layer replacement
 architecture I designed and validated in simulation during the internship:
 
 ```
-┌─ 4. Diagnostic layer ──── Node-RED → Ollama (llama3.2, local) → strict-JSON diagnosis, fallback procedure
-├─ 3. Supervision layer ─── Node-RED: piece counter, OEE (TRS), SPC ±3σ drift detection, dashboard
-├─ 2. Isolation layer ───── optocouplers + opto-isolated relays (Proteus ISIS)
+┌─ 4. Diagnostic layer ──── Node-RED → Ollama (llama3.2:1b, local) → schema-constrained JSON diagnosis, fallback procedure
+├─ 3. Supervision layer ─── Node-RED: piece/reject counter, OEE (TRS), SPC ±3σ drift detection, 3-tab dashboard, Excel archive
+├─ 2. Isolation layer ───── PC817 optocouplers + transistor-driven relays (Proteus ISIS)
 └─ 1. Control layer ─────── ESP32 firmware: safety-first state machine, MQTT telemetry, degraded modes
 ```
 
@@ -36,59 +36,109 @@ with a one-shot *event layer* (published once per transition) and a *continuous
 layer* (sensor polling, output driving).
 
 **Safety block with absolute priority:** cover open, cycle-stop, or either thermal
-fault → all outputs are cut **first**, the cause list is published **second**, and
-the start-button state is resynchronised to avoid ghost restarts.
+fault → all outputs are cut **first**, the cause list is published **second**
+(`Capot_Ouvert`, `Arret_DCY`, `Defaut_RTH1`, `Defaut_RTH2`, space-separated), and
+the start-button state is resynchronised to avoid ghost restarts. While the
+condition persists, every heartbeat repeats the `ARRET_SECURITE` state and its
+cause, so the supervision layer never misses a fault that happened during a
+network gap.
 
 **Telemetry (MQTT, JSON):**
 - `roufix/machine1/data` — `{"type_message":"evenement"|"heartbeat","etat":…,"defaut":…,"duree_cycle":ms}`; heartbeat every 10 s
 - `roufix/machine1/systeme/statut` — retained `En ligne` / last-will `Hors ligne`
-- Degraded mode: with no Wi-Fi or broker the publish path returns immediately; reconnection is attempted every 5 s without blocking the cycle.
+- Degraded mode: with no Wi-Fi or broker the publish path returns immediately and
+  counts the lost message; reconnection is attempted every 5 s without blocking the cycle.
 
-Validated in **Wokwi** (`diagram.json`: ESP32 DevKit-C, push-buttons, slide switches for
-sensors/safety, LEDs for the four outputs, Wi-Fi gateway).
+Validated in **Wokwi** (`diagram.json`: ESP32 DevKit-C, push-buttons for S1/ST/RT,
+slide switches for CP/DCY/RTH1/RTH2, LEDs for the four outputs, Wi-Fi gateway,
+each part labelled with its machine-side name).
 
 ## 2. Isolation layer — `proteus/`
 
-`ROUFIX_test.pdsprj` / `ROUFIX_doc.pdsprj` (Proteus 8 ISIS): galvanic isolation
-between the 3.3 V ESP32 I/O and the 24 V machine side — optocouplers on the inputs,
-opto-isolated relay modules on the contactor and valve outputs — so a fault on the
-power side cannot reach the controller (the original EMI-crash failure mode).
+Galvanic isolation between the 3.3 V ESP32 I/O and the 24 V machine side, so a
+fault on the power side cannot reach the controller (the original EMI-crash
+failure mode):
+
+- **Inputs** — one PC817 optocoupler per sensor/safety contact; its
+  phototransistor output is pulled up, so the ESP32 reads an active-low signal.
+- **Outputs** — one channel per contactor (KM1, KM2) and valve (A+, A−):
+  ESP32 pin → 220 Ω → PC817 → 2N2222 (1 kΩ base) → 5 V relay coil with
+  freewheeling diode, whose NO contact switches the 24 V load, itself protected
+  by its own diode.
+
+`ROUFIX_test.pdsprj` is the test bench: the machine side is replaced by
+`LOGICSTATE` / `SW-SPST` substitutes on the inputs and by lamps and voltmeters
+on the outputs, so every channel can be exercised and measured without the
+real machine. `ROUFIX_doc.pdsprj` is the same design cleaned for documentation.
 
 ## 3. Supervision layer — `node-red/flows.json`
 
-- **Piece counter & shift archive** from cycle events, with manual reset.
-- **OEE / TRS** = availability × performance × quality, where availability =
-  production time / elapsed shift time, performance = (pieces × theoretical cycle
-  5.2 s) / production time, and quality = 1 (no reject sensor yet — stated as an assumption).
-- **SPC drift detection** on cycle time: learn a baseline of N cycles, freeze
-  mean ± 3σ control limits, then flag *high drift* (cycle too long — typical of
-  abrasive-disc wear) or *low drift* (abnormally short — clamping/sensor issue).
-- **Dashboard** (node-red-dashboard): four gauges (availability, performance,
-  quality, OEE), pieces produced, machine state, communication status.
+Single Node-RED flow, MQTT in → classification → counters → OEE / SPC → dashboard
+and archive.
+
+- **Fault classification** (`Detection defaut machine`): the four stop causes all
+  publish the same `ARRET_SECURITE` state, so the `defaut` field decides. Cover
+  open and DCY released are *operating stops*; RTH1 / RTH2 are *machine faults*
+  and are the only ones that trigger a diagnosis. Rising-edge detection avoids
+  re-triggering on every heartbeat.
+- **Piece & reject counter** (`Compteur pieces`): a cycle completed normally is a
+  good piece; a cycle interrupted by a safety stop is counted as a reject.
+- **OEE / TRS** (`Calcul TRS`) = availability × performance × quality, with
+  availability = production time / elapsed shift time, performance =
+  (good pieces × theoretical cycle 5.2 s) / production time, and quality =
+  good pieces / engaged pieces — **measured**, no longer assumed equal to 1.
+- **SPC drift detection** (`Detection derive`): learn a baseline of 10 cycles
+  (30–50 recommended in production), freeze mean ± 3σ control limits, then flag
+  *high drift* (cycle too long — typical of abrasive-disc wear) or *low drift*
+  (abnormally short — clamping/sensor issue).
+- **Per-operator shift archive**: the operator enters their name, closes the
+  shift from the dashboard, and one row is appended to the `Postes` sheet of
+  `roufix_suivi.xlsx` (date, times, operator, good pieces, rejects, engaged
+  pieces, production time, mean cycle, rate, theoretical cycle, availability,
+  performance, quality, OEE, incidents, AI fallbacks, closing reason). Every
+  diagnosis, real or fallback, goes to the `Diagnostics` sheet. The workbook is
+  read, extended and rewritten with SheetJS (`xlsx` module declared in the
+  `Fusionner classeur` function node).
+- **Dashboard** (node-red-dashboard, three tabs):
+  - *Pilotage Operateur* — machine state, live AI diagnosis card, operator name
+    and shift-close button;
+  - *Analyse Management* — OEE table with the four indicators and their trend;
+  - *Suivi Responsable* — shift table and diagnosis register read back from the workbook.
 
 ## 4. Diagnostic layer — Node-RED → Ollama
 
-On a drift alert the flow builds a prompt for a **local LLM** (`llama3.2` via
-Ollama's `/api/generate`) that embeds the machine architecture and the SPC
-numbers, and constrains the answer to a fixed JSON schema:
+On a drift alert or a thermal fault the flow (`Preparer prompt IA`) builds a
+prompt for a **local LLM** (`llama3.2:1b` via Ollama's `/api/generate`). The
+division of labour was measured, not assumed: the 1-billion-parameter model
+returned the same answer for a 58 ms and a 2 608 ms overshoot, so **Node-RED
+computes the facts and the severity** (relative deviation ≥ 25 % → *severe*;
+both thermal relays tripped → *severe*) and **the model only classifies** within
+a maintenance reference frame indexed by fault family (long / short cycle,
+thermal fault on M1, M2 or both) and by severity.
+
+The answer is constrained by a JSON schema whose fields are `enum`s taken from
+that reference frame — a cause or an action outside it is impossible:
 
 ```json
-{"anomalie": "...", "causes_probables": ["...", "..."], "action_immediate": "..."}
+{"causes_probables": ["…", "…"], "action_immediate": "…"}
 ```
 
-The response is validated (`Extraire diagnostic`); on timeout (40 s), a stopped
-service or a malformed answer, a **fallback** node returns the standard level-1
-maintenance procedure instead — the technician is never left without an
-instruction.
+Generation options: `num_predict 130`, `temperature 0.2`, `num_ctx 1024`,
+`keep_alive -1` (model kept in RAM, pre-warmed at start-up and every 30 min to
+avoid a ~7 s reload). The response is validated (`Extraire diagnostic`); on
+timeout (40 s), a stopped service or a malformed answer, a **fallback** node
+returns the standard level-1 maintenance procedure instead — the technician is
+never left without an instruction, and the SPC facts stay on screen either way.
 
 ## Degraded scenarios validated
 
 | Scenario | Behaviour |
 |---|---|
-| Network / broker loss | cycle continues; publishes are skipped; reconnect every 5 s; last-will marks the machine offline |
-| AI service stopped | fallback diagnosis with the standard maintenance procedure |
-| Tool wear | cycle-time drift crosses the +3σ limit → alert → LLM diagnosis |
-| Safety input during cycle | outputs cut immediately, cause published, machine returns to `ATTENTE` |
+| Network / broker loss | cycle continues; publishes are skipped and counted; reconnect every 5 s; last-will marks the machine offline |
+| AI service stopped | fallback diagnosis with the standard maintenance procedure; SPC facts still displayed |
+| Tool wear | cycle-time drift crosses the +3σ limit → alert → severity computed → LLM classification |
+| Safety input during cycle | outputs cut immediately, cause published, piece counted as reject, machine returns to `ATTENTE` |
+| Thermal fault RTH1 / RTH2 | classified as a machine fault (not an operating stop) → diagnosis targeted at M1 or M2 |
 
 ## Running it
 
@@ -100,9 +150,12 @@ Wokwi guest network and the public HiveMQ test broker — use a private Mosquitt
 broker in production.
 
 **Node-RED:** install `node-red-dashboard`, import `node-red/flows.json`, point the
-MQTT broker node at your broker. Dashboard at `http://localhost:1880/ui`.
+MQTT broker node at your broker, and set the workbook path in the
+`Preparer archive` and `Archiver diagnostic` function nodes (the flow ships with
+a Windows path). The `xlsx` module is declared in the `Fusionner classeur` node
+and installed by Node-RED on first deploy. Dashboard at `http://localhost:1880/ui`.
 
-**Ollama:** `ollama pull llama3.2` and keep `ollama serve` running on the
+**Ollama:** `ollama pull llama3.2:1b` and keep `ollama serve` running on the
 Node-RED host (`http://localhost:11434`).
 
 ## Status

@@ -1,11 +1,30 @@
 [
     {
+        "id": "1ce0fda707f2fde3",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "4b8bea3d1e25ea78",
         "type": "tab",
         "label": "Flow 1",
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "5f28a7494c0f482e",
+        "type": "ui_group",
+        "name": "Performance & Qualité",
+        "tab": "661e912b06371fe8",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
     },
     {
         "id": "b68f2e9d50a4675f",
@@ -149,8 +168,8 @@
         "name": "TRS",
         "tab": "661e912b06371fe8",
         "order": 1,
-        "disp": true,
-        "width": 6,
+        "disp": false,
+        "width": 12,
         "collapse": false,
         "className": ""
     },
@@ -167,9 +186,51 @@
         "type": "ui_group",
         "name": "Etat machine",
         "tab": "18c2a64c07f9e2eb",
+        "order": 2,
+        "disp": false,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "f7d4eb365c2a8901",
+        "type": "ui_group",
+        "name": "Poste en cours",
+        "tab": "18c2a64c07f9e2eb",
         "order": 1,
-        "disp": true,
-        "width": 6,
+        "disp": false,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "e4a8b2015c7d3960",
+        "type": "ui_tab",
+        "name": "Suivi Responsable",
+        "icon": "assignment",
+        "order": 3,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "f1c6d40982a7b3e5",
+        "type": "ui_group",
+        "name": "Postes",
+        "tab": "e4a8b2015c7d3960",
+        "order": 1,
+        "disp": false,
+        "width": 12,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "a2e5f8137b0c496d",
+        "type": "ui_group",
+        "name": "Diagnostics",
+        "tab": "e4a8b2015c7d3960",
+        "order": 2,
+        "disp": false,
+        "width": 12,
         "collapse": false,
         "className": ""
     },
@@ -186,14 +247,15 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 630,
-        "y": 440,
+        "x": 610,
+        "y": 380,
         "wires": [
             [
                 "45904f3374764126",
                 "4cbcc10437753e70",
-                "fa6b4c2b10f33e72",
-                "2d66cb75f53c35d5"
+                "2d66cb75f53c35d5",
+                "5b7c3af83c67bcca",
+                "e2f7a41c96b03d58"
             ]
         ]
     },
@@ -245,7 +307,7 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Compteur pieces",
-        "func": "// Récupère le compteur, ou 0 s'il n'existe pas encore\nlet compteur = flow.get(\"nb_pieces\") || 0;\ncompteur++;\nflow.set(\"nb_pieces\", compteur);\n\n// Cumule le temps de production\nlet tempsProd = flow.get(\"temps_production\") || 0;\ntempsProd += msg.payload.duree_cycle;\nflow.set(\"temps_production\", tempsProd);\n\n// Prépare le message de sortie\nmsg.payload = {\n    nb_pieces: compteur,\n    dernier_cycle: msg.payload.duree_cycle,\n    temps_production_total: tempsProd\n};\nreturn msg;",
+        "func": "// ============================================================\n// COMPTEUR PIECES\n// Ne compte comme BONNE que la piece issue d'un cycle complet.\n//\n// Pourquoi c'est indispensable : quand une securite se declenche (capot,\n// DCY, RTH1, RTH2), l'ESP32 force etat_cycle a ATTENTE sans reinitialiser\n// temps_debut_cycle. L'evenement ATTENTE qui suit porte donc une\n// duree_cycle qui inclut toute la duree de l'arret. Sans garde-fou, cette\n// duree parasite etait comptee comme une bonne piece ET venait gonfler le\n// temps de production, faussant disponibilite et performance.\n//\n// Le drapeau est pose par le noeud \"Detection defaut machine\".\n// ============================================================\n\nconst cycle = msg.payload.duree_cycle;\n\nconst interrompu = flow.get(\"cycle_interrompu\") === true;\nflow.set(\"cycle_interrompu\", false);\n\nif (interrompu) {\n    const rebuts = (flow.get(\"nb_rebuts\") || 0) + 1;\n    flow.set(\"nb_rebuts\", rebuts);\n\n    // La duree n'est PAS ajoutee au temps de production : ce n'est pas du\n    // temps de fabrication, c'est de l'arret. La disponibilite en tient\n    // compte d'elle-meme, puisqu'elle rapporte la production au temps ecoule.\n    node.status({ fill: \"red\", shape: \"ring\", text: rebuts + \" rebut(s) - cycle interrompu\" });\n    msg.payload = {\n        rebut: true,\n        nb_pieces: flow.get(\"nb_pieces\") || 0,\n        nb_rebuts: rebuts,\n        duree_ecartee: cycle,\n        temps_production_total: flow.get(\"temps_production\") || 0\n    };\n    return msg;\n}\n\nconst compteur = (flow.get(\"nb_pieces\") || 0) + 1;\nflow.set(\"nb_pieces\", compteur);\n\nconst tempsProd = (flow.get(\"temps_production\") || 0) + cycle;\nflow.set(\"temps_production\", tempsProd);\n\nnode.status({ fill: \"green\", shape: \"dot\", text: compteur + \" piece(s) bonne(s)\" });\nmsg.payload = {\n    rebut: false,\n    nb_pieces: compteur,\n    nb_rebuts: flow.get(\"nb_rebuts\") || 0,\n    dernier_cycle: cycle,\n    temps_production_total: tempsProd\n};\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -313,7 +375,7 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Preparer archive",
-        "func": "const nbPieces = flow.get(\"nb_pieces\") || 0;\nconst tempsProd = flow.get(\"temps_production\") || 0;\nconst maintenant = new Date();\n\n// Temps de cycle moyen (protection contre division par zéro)\nconst cycleMoyen = nbPieces > 0 ? Math.round(tempsProd / nbPieces) : 0;\n\nmsg.payload = maintenant.toISOString() + \";\"\n            + nbPieces + \";\"\n            + tempsProd + \";\"\n            + cycleMoyen + \"\\n\";\n\nreturn msg;",
+        "func": "// ============================================================\n// PREPARER ARCHIVE  --  fiche complete du poste\n// Remplace la ligne \"date;pieces;temps;cycle\" par un enregistrement\n// exploitable par le responsable : qui a produit, combien, a quel rythme,\n// avec quelle qualite de fonctionnement et combien d'incidents.\n// La sortie alimente la feuille \"Postes\" du classeur roufix_suivi.xlsx :\n// les nombres y sont de vrais nombres, triables et calculables.\n// ============================================================\n\nconst CHEMIN = \"C:/Users/GM Louay/OneDrive/Documents/roufix_suivi.xlsx\";\nconst TEMPS_CYCLE_THEORIQUE = 5200;   // ms, identique au noeud \"Calcul TRS\"\n\nconst ouvrier   = flow.get(\"ouvrier\") || \"Non renseigne\";\nconst nbPieces  = flow.get(\"nb_pieces\") || 0;\nconst nbRebuts  = flow.get(\"nb_rebuts\") || 0;\nconst tempsProd = flow.get(\"temps_production\") || 0;\nconst debut     = flow.get(\"debut_poste\") || Date.now();\nconst fin       = Date.now();\nconst duree     = Math.max(0, fin - debut);\n\n// Indicateurs du poste (memes formules que le calcul temps reel)\nconst totalEngage = nbPieces + nbRebuts;\nconst cycleMoyen = totalEngage > 0 ? Math.round(tempsProd / totalEngage) : 0;\nconst dispo   = duree > 0 ? (tempsProd / duree) * 100 : 0;\nconst perf    = tempsProd > 0 ? ((totalEngage * TEMPS_CYCLE_THEORIQUE) / tempsProd) * 100 : 0;\n// Qualite MESUREE : les cycles interrompus (defaut, capot ouvert) sont\n// comptes en rebut par le noeud \"Compteur pieces\".\nconst qualite = totalEngage > 0 ? (nbPieces / totalEngage) * 100 : 100;\nconst trs     = (dispo / 100) * (perf / 100) * (qualite / 100) * 100;\nconst cadence = duree > 0 ? Math.round(nbPieces / (duree / 3600000)) : 0;\n\n// Incidents survenus pendant CE poste\nconst registre = (flow.get(\"diagnostics\") || []).filter(d => d.ts >= debut);\nconst nbReplis = registre.filter(d => d.source === \"repli\").length;\n\nconst arrondi = (v, dec) => Math.round(v * Math.pow(10, dec)) / Math.pow(10, dec);\nconst fiche = {\n    date: new Date(fin).toLocaleDateString('fr-FR'),\n    debut: new Date(debut).toLocaleTimeString('fr-FR'),\n    fin: new Date(fin).toLocaleTimeString('fr-FR'),\n    ouvrier: ouvrier,\n    duree_min: Math.round(duree / 60000),\n    pieces: nbPieces,\n    rebuts: nbRebuts,\n    engagees: totalEngage,\n    production_min: Math.round(tempsProd / 60000),\n    cycle_moyen: cycleMoyen,\n    cadence: cadence,\n    disponibilite: arrondi(dispo, 1),\n    performance: arrondi(perf, 1),\n    qualite: arrondi(qualite, 1),\n    trs: arrondi(trs, 1),\n    incidents: registre.length,\n    replis: nbReplis,\n    // releve d'equipe, bouton du dashboard, ou tache planifiee de 06:00\n    motif: msg.motif || (msg.topic === \"cloture\" ? \"cloture manuelle\" : \"fin de poste\")\n};\n\n// Registre consulte par l'onglet du responsable (50 postes conserves)\nconst postes = flow.get(\"postes\") || [];\npostes.unshift(fiche);\nflow.set(\"postes\", postes.slice(0, 50));\n\nmsg.filename = CHEMIN;\nmsg.feuille = \"Postes\";\nmsg.entete = [\"Date\", \"Heure debut\", \"Heure fin\", \"Ouvrier\", \"Duree poste (min)\",\n              \"Pieces bonnes\", \"Rebuts\", \"Pieces engagees\", \"Temps production (min)\", \"Cycle moyen (ms)\",\n              \"Cadence (pieces/h)\", \"Cycle theorique (ms)\", \"Disponibilite (%)\",\n              \"Performance (%)\", \"Qualite (%)\", \"TRS (%)\", \"Incidents\",\n              \"Replis IA\", \"Motif de cloture\"];\nmsg.ligne = [fiche.date, fiche.debut, fiche.fin, ouvrier, fiche.duree_min,\n             fiche.pieces, fiche.rebuts, fiche.engagees, fiche.production_min, fiche.cycle_moyen,\n             fiche.cadence, TEMPS_CYCLE_THEORIQUE, fiche.disponibilite,\n             fiche.performance, fiche.qualite, fiche.trs, fiche.incidents,\n             fiche.replis, fiche.motif];\nmsg.largeurs = [11, 11, 11, 18, 17, 14, 9, 15, 20, 16, 17, 18, 16, 15, 12, 10, 10, 10, 18]\n               .map(w => ({ wch: w }));\n\n// Autorise la remise a zero des compteurs en bout de chaine\nmsg.raz = true;\n\nnode.status({ fill: \"green\", shape: \"dot\", text: ouvrier + \" : \" + nbPieces + \" pieces\" });\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -324,26 +386,7 @@
         "y": 820,
         "wires": [
             [
-                "14520571fa4f4805"
-            ]
-        ]
-    },
-    {
-        "id": "14520571fa4f4805",
-        "type": "file",
-        "z": "4b8bea3d1e25ea78",
-        "name": "",
-        "filename": "C:/Users/GM Louay/OneDrive/Documents/roufix_historique.csv",
-        "filenameType": "str",
-        "appendNewline": false,
-        "createDir": false,
-        "overwriteFile": "false",
-        "encoding": "none",
-        "x": 1070,
-        "y": 880,
-        "wires": [
-            [
-                "a268ea1017fc75b4"
+                "db18cf70906e2345"
             ]
         ]
     },
@@ -352,7 +395,7 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "RAZ compteurs",
-        "func": "flow.set(\"nb_pieces\", 0);\nflow.set(\"temps_production\", 0);\nflow.set(\"debut_poste\", Date.now());   // ← nouvelle ligne\n\nnode.warn(\"Compteurs remis a zero - nouveau poste demarre\");\nreturn null;",
+        "func": "// ============================================================\n// RAZ COMPTEURS\n// Ne se declenche QUE sur une cloture de poste (msg.raz). Ce noeud est en\n// bout de la chaine d'ecriture CSV, partagee avec l'archivage des\n// diagnostics : sans ce garde-fou, chaque diagnostic remettrait la\n// production du poste a zero.\n// ============================================================\n\nif (msg.raz !== true) { return null; }\n\n// La releve d'equipe transmet le nom du nouvel ouvrier\nif (msg.nouvel_ouvrier) {\n    flow.set(\"ouvrier\", msg.nouvel_ouvrier);\n}\n\nflow.set(\"nb_pieces\", 0);\nflow.set(\"nb_rebuts\", 0);\nflow.set(\"temps_production\", 0);\nflow.set(\"cycle_interrompu\", false);\nflow.set(\"debut_poste\", Date.now());\nflow.set(\"hist_trs\", null);          // les jauges repartent sur le nouveau poste\n\n// Les limites SPC ne sont PAS reinitialisees : elles caracterisent la\n// machine, pas l'ouvrier, et leur reapprentissage couterait 10 cycles.\n\nnode.warn(\"Poste cloture - compteurs remis a zero\"\n        + (msg.nouvel_ouvrier ? \" - nouvel ouvrier : \" + msg.nouvel_ouvrier : \"\"));\nnode.status({ fill: \"green\", shape: \"dot\", text: \"poste : \" + (flow.get(\"ouvrier\") || \"non renseigne\") });\nreturn null;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -370,7 +413,7 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Calcul TRS",
-        "func": "const TEMPS_CYCLE_THEORIQUE = 5200;  // ms, mesuré sur le terrain\n\nconst nbPieces = flow.get(\"nb_pieces\") || 0;\nconst tempsProd = flow.get(\"temps_production\") || 0;\nlet debutPoste = flow.get(\"debut_poste\");\n\n// Si le poste n'a jamais été initialisé, on le démarre maintenant\nif (!debutPoste) {\n    debutPoste = Date.now();\n    flow.set(\"debut_poste\", debutPoste);\n}\n\nconst tempsRequis = Date.now() - debutPoste;\n\n// Disponibilité : temps de production / temps écoulé depuis le début du poste\nconst dispo = tempsRequis > 0 ? (tempsProd / tempsRequis) : 0;\n\n// Performance : production idéale / production réelle\nconst perf = tempsProd > 0 ? ((nbPieces * TEMPS_CYCLE_THEORIQUE) / tempsProd) : 0;\n\n// Qualité : hypothèse, pas de capteur de rebut\nconst qualite = 1;\n\nconst trs = dispo * perf * qualite;\n\nmsg.payload = {\n    nb_pieces: nbPieces,\n    disponibilite: Math.round(dispo * 1000) / 10,   // en %\n    performance: Math.round(perf * 1000) / 10,\n    qualite: qualite * 100,\n    trs: Math.round(trs * 1000) / 10,\n    temps_poste_min: Math.round(tempsRequis / 60000)\n};\n\nreturn msg;",
+        "func": "const TEMPS_CYCLE_THEORIQUE = 5200;  // ms, mesuré sur le terrain\n\nconst nbPieces = flow.get(\"nb_pieces\") || 0;\nconst nbRebuts = flow.get(\"nb_rebuts\") || 0;      // cycles interrompus\nconst tempsProd = flow.get(\"temps_production\") || 0;\nlet debutPoste = flow.get(\"debut_poste\");\n\n// Si le poste n'a jamais été initialisé, on le démarre maintenant\nif (!debutPoste) {\n    debutPoste = Date.now();\n    flow.set(\"debut_poste\", debutPoste);\n}\n\nconst tempsRequis = Date.now() - debutPoste;\n\n// Disponibilité : temps de production / temps écoulé depuis le début du poste\nconst dispo = tempsRequis > 0 ? (tempsProd / tempsRequis) : 0;\n\n// Performance : production idéale / production réelle.\nconst totalEngage = nbPieces + nbRebuts;\n// La performance ne porte que sur les BONNES pieces : le temps de\n// production n accumule que leurs cycles. Un cycle interrompu a une duree\n// parasite (elle inclut l arret), l integrer fausserait le calcul.\nconst perf = tempsProd > 0 ? ((nbPieces * TEMPS_CYCLE_THEORIQUE) / tempsProd) : 0;\n\n// Qualité : désormais MESURÉE. Une pièce dont le cycle a été interrompu\n// (défaut, capot ouvert en cours de rognage) est comptée en rebut par le\n// nœud \"Compteur pieces\". Plus d'hypothèse à 100 %.\nconst qualite = totalEngage > 0 ? (nbPieces / totalEngage) : 1;\n\nconst trs = dispo * perf * qualite;\n\nconst val = {\n    trs:           Math.round(trs * 1000) / 10,     // en %\n    disponibilite: Math.round(dispo * 1000) / 10,\n    performance:   Math.round(perf * 1000) / 10,\n    qualite:       Math.round(qualite * 1000) / 10\n};\n\n// NOUVEAU : aucune piece produite = pas encore d'indicateur exploitable.\n// Sans ce garde-fou, les 4 jauges partent a 0 % et s'affichent en rouge\n// des le demarrage du poste, ce qui est une fausse alerte.\nconst demarrage = (totalEngage === 0);\n\n// ============================================================\n// NOUVEAU - preparation des elements graphiques du dashboard\n// Tout est calcule ici (cote Node-RED) pour que le noeud\n// ui_template reste purement declaratif : pas de script dans\n// le dashboard, donc aucun risque de blocage de l'IHM.\n// ============================================================\n\n// --- Historique glissant pour les mini-courbes (sparklines) ---\nconst MAX_HIST = 40;\nconst CLES = [\"trs\", \"disponibilite\", \"performance\", \"qualite\"];\nconst hist = flow.get(\"hist_trs\") || { trs: [], disponibilite: [], performance: [], qualite: [] };\nCLES.forEach(function (k) {\n    if (!Array.isArray(hist[k])) { hist[k] = []; }\n    hist[k].push(val[k]);\n    if (hist[k].length > MAX_HIST) { hist[k].shift(); }\n});\nflow.set(\"hist_trs\", hist);\n\n// --- Geometrie des jauges SVG (cercle r=54, arc utile de 240 degres) ---\nconst CIRC = 339.292;\nconst ARC = CIRC * 240 / 360;      // 226.2\nconst GRIS = \"#c7cfda\";            // teinte neutre : indicateur non significatif\n\n// Code couleur : rouge = action immediate, orange = surveillance, vert = OK\nfunction couleur(cle, v) {\n    if (demarrage) { return GRIS; }\n    if (cle === \"qualite\")       { return v >= 99 ? \"#2e9e6b\" : (v >= 95 ? \"#e8952a\" : \"#e04b52\"); }\n    if (cle === \"performance\")   { return v < 75 ? \"#e04b52\" : (v < 90 ? \"#e8952a\" : (v <= 110 ? \"#2e9e6b\" : \"#2c5aa0\")); }\n    if (cle === \"disponibilite\") { return v < 75 ? \"#e04b52\" : (v < 85 ? \"#e8952a\" : \"#2e9e6b\"); }\n    return v < 60 ? \"#e04b52\" : (v < 75 ? \"#e8952a\" : \"#2e9e6b\");   // TRS\n}\n\n// Mini-courbe : serie de points SVG normalisee sur 116 x 24.\n// Serie plate -> ligne centree (et non collee au bas du cadre).\nfunction sparkline(serie) {\n    if (!serie || serie.length < 2) { return \"\"; }\n    const W = 116, H = 24;\n    const mini = Math.min.apply(null, serie);\n    const maxi = Math.max.apply(null, serie);\n    const plate = (maxi - mini) < 0.5;\n    const pas = W / (serie.length - 1);\n    return serie.map(function (v, i) {\n        const y = plate ? (H / 2) : (H - 3 - ((v - mini) / (maxi - mini)) * (H - 6));\n        return (i * pas).toFixed(1) + \",\" + y.toFixed(1);\n    }).join(\" \");\n}\n\nfunction jauge(cle, titre, max) {\n    const v = val[cle];\n    const serie = hist[cle];\n    const pct = demarrage ? 0 : Math.max(0, Math.min(100, (v / max) * 100));\n    const somme = serie.reduce(function (a, b) { return a + b; }, 0);\n    return {\n        cle: cle,\n        titre: titre,\n        valeur: v,\n        max: max,\n        couleur: couleur(cle, v),\n        dash: (ARC * pct / 100).toFixed(1) + \" \" + CIRC,   // arc rempli\n        // Bout arrondi seulement si l'arc est visible : evite le point\n        // parasite laisse par un stroke-linecap round a 0 %.\n        linecap: pct > 1 ? \"round\" : \"butt\",\n        points: sparkline(serie),\n        mini: Math.round(Math.min.apply(null, serie) * 10) / 10,\n        maxi: Math.round(Math.max.apply(null, serie) * 10) / 10,\n        moy: Math.round((somme / serie.length) * 10) / 10,\n        n: serie.length,\n        // Alerte visuelle : uniquement sur une mesure etablie (>= 3 releves)\n        critique: (!demarrage && serie.length >= 3 && couleur(cle, v) === \"#e04b52\")\n    };\n}\n\nconst cycleMoyen = nbPieces > 0 ? Math.round(tempsProd / nbPieces) : 0;\n\nmsg.payload = {\n    // --- champs historiques conserves (compatibilite debug / archives) ---\n    nb_pieces: nbPieces,\n    nb_rebuts: nbRebuts,\n    total_engage: totalEngage,\n    disponibilite: val.disponibilite,\n    performance: val.performance,\n    qualite: val.qualite,\n    trs: val.trs,\n    temps_poste_min: Math.round(tempsRequis / 60000),\n\n    // --- NOUVEAU : donnees d'affichage du tableau de bord ---\n    demarrage: demarrage,\n    cycle_moyen: cycleMoyen,\n    cycle_theorique: TEMPS_CYCLE_THEORIQUE,\n    arc_track: ARC.toFixed(1) + \" \" + CIRC,\n    maj: new Date().toLocaleTimeString('fr-FR'),\n    jauges: [\n        jauge(\"trs\",           \"TRS Global\",    100),\n        jauge(\"disponibilite\", \"Disponibilité\", 100),\n        jauge(\"performance\",   \"Performance\",   150),\n        jauge(\"qualite\",       \"Qualité\",       100)\n    ]\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -382,11 +425,7 @@
         "wires": [
             [
                 "d4ec7cbe1b795c53",
-                "4889b69749e1f9a4",
-                "a77a175ca1aada56",
-                "3899d823f47eb0dd",
-                "f0b74a41c4133863",
-                "25f3273fe7b23dfa"
+                "a1f4c2d3e5b60718"
             ]
         ]
     },
@@ -437,237 +476,6 @@
         ]
     },
     {
-        "id": "4889b69749e1f9a4",
-        "type": "ui_gauge",
-        "z": "4b8bea3d1e25ea78",
-        "name": "",
-        "group": "d2ca4264c146f130",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "TRS Global",
-        "label": "%",
-        "format": "{{msg.payload.trs}}",
-        "min": 0,
-        "max": "100",
-        "colors": [
-            "#f10909",
-            "#f4870b",
-            "#08e70c"
-        ],
-        "seg1": "",
-        "seg2": "",
-        "diff": false,
-        "className": "",
-        "x": 1550,
-        "y": 560,
-        "wires": []
-    },
-    {
-        "id": "f0b74a41c4133863",
-        "type": "ui_gauge",
-        "z": "4b8bea3d1e25ea78",
-        "name": "",
-        "group": "d2ca4264c146f130",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Disponibilité",
-        "label": "%",
-        "format": "{{msg.payload.disponibilite}}",
-        "min": 0,
-        "max": "100",
-        "colors": [
-            "#f10909",
-            "#f4870b",
-            "#08e70c"
-        ],
-        "seg1": "75",
-        "seg2": "85",
-        "diff": false,
-        "className": "",
-        "x": 1570,
-        "y": 760,
-        "wires": []
-    },
-    {
-        "id": "3899d823f47eb0dd",
-        "type": "ui_gauge",
-        "z": "4b8bea3d1e25ea78",
-        "name": "",
-        "group": "d2ca4264c146f130",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Qualité",
-        "label": "%",
-        "format": "{{msg.payload.qualite}}",
-        "min": 0,
-        "max": "100",
-        "colors": [
-            "#24f109",
-            "#1fe411",
-            "#08e70c"
-        ],
-        "seg1": "",
-        "seg2": "",
-        "diff": false,
-        "className": "",
-        "x": 1560,
-        "y": 700,
-        "wires": []
-    },
-    {
-        "id": "a77a175ca1aada56",
-        "type": "ui_gauge",
-        "z": "4b8bea3d1e25ea78",
-        "name": "",
-        "group": "d2ca4264c146f130",
-        "order": 0,
-        "width": 0,
-        "height": 0,
-        "gtype": "gage",
-        "title": "Performance",
-        "label": "%",
-        "format": "{{msg.payload.performance}}",
-        "min": 0,
-        "max": "150",
-        "colors": [
-            "#f10909",
-            "#0bd022",
-            "#120edd"
-        ],
-        "seg1": "75",
-        "seg2": "100",
-        "diff": false,
-        "className": "",
-        "x": 1550,
-        "y": 640,
-        "wires": []
-    },
-    {
-        "id": "25f3273fe7b23dfa",
-        "type": "ui_text",
-        "z": "4b8bea3d1e25ea78",
-        "group": "d2ca4264c146f130",
-        "order": 5,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Pieces produites",
-        "format": "{{msg.payload.nb_pieces}}",
-        "layout": "row-spread",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 1560,
-        "y": 820,
-        "wires": []
-    },
-    {
-        "id": "72c4209a18d41fdf",
-        "type": "inject",
-        "z": "4b8bea3d1e25ea78",
-        "name": "Note qualite",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": true,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 970,
-        "y": 1020,
-        "wires": [
-            [
-                "75b4cc78ce2aa984"
-            ]
-        ]
-    },
-    {
-        "id": "75b4cc78ce2aa984",
-        "type": "change",
-        "z": "4b8bea3d1e25ea78",
-        "name": "Texte note qualite",
-        "rules": [
-            {
-                "t": "set",
-                "p": "payload",
-                "pt": "msg",
-                "to": "Note : en l'absence de capteur de rebut, la qualite est supposee a 100%",
-                "tot": "str"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1190,
-        "y": 1020,
-        "wires": [
-            [
-                "51c659b90bebcb81"
-            ]
-        ]
-    },
-    {
-        "id": "51c659b90bebcb81",
-        "type": "ui_text",
-        "z": "4b8bea3d1e25ea78",
-        "group": "d2ca4264c146f130",
-        "order": 4,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Note qualite",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 1430,
-        "y": 1020,
-        "wires": []
-    },
-    {
-        "id": "fa6b4c2b10f33e72",
-        "type": "ui_text",
-        "z": "4b8bea3d1e25ea78",
-        "group": "1bf2602bd67f085b",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Etat actuel",
-        "format": "{{msg.payload.etat}}",
-        "layout": "row-spread",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 810,
-        "y": 600,
-        "wires": []
-    },
-    {
         "id": "2d66cb75f53c35d5",
         "type": "trigger",
         "z": "4b8bea3d1e25ea78",
@@ -688,37 +496,16 @@
         "y": 300,
         "wires": [
             [
-                "a4e30642e7de15c8"
+                "5b7c3af83c67bcca"
             ]
         ]
-    },
-    {
-        "id": "a4e30642e7de15c8",
-        "type": "ui_text",
-        "z": "4b8bea3d1e25ea78",
-        "group": "1bf2602bd67f085b",
-        "order": 2,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "Communication",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": 16,
-        "color": "#000000",
-        "x": 1080,
-        "y": 300,
-        "wires": []
     },
     {
         "id": "2ef55a303b388e2e",
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Detection derive",
-        "func": "// --- Paramètres ---\nconst N_BASELINE = 10;        // 30-50 en production\nconst K_SIGMA = 3;            // limites à ±3σ (règle classique SPC)\n\nconst cycle = msg.payload.dernier_cycle;\n\n// --- Phase 1 : apprentissage ---\nlet baseline = flow.get(\"baseline\") || [];\nlet limites = flow.get(\"limites_spc\");\n\nif (!limites) {\n    baseline.push(cycle);\n    flow.set(\"baseline\", baseline);\n\n    if (baseline.length < N_BASELINE) {\n        msg.payload = {\n            phase: \"APPRENTISSAGE\",\n            progression: baseline.length + \"/\" + N_BASELINE,\n            statut: \"OK\"\n        };\n        return msg;\n    }\n\n    // Calcul de la moyenne et de l'écart-type\n    const moyenne = baseline.reduce((a, b) => a + b, 0) / baseline.length;\n    const variance = baseline.reduce((a, b) => a + Math.pow(b - moyenne, 2), 0) / baseline.length;\n    const ecartType = Math.sqrt(variance);\n\n    limites = {\n        moyenne: Math.round(moyenne),\n        sigma: Math.round(ecartType),\n        LSC: Math.round(moyenne + K_SIGMA * ecartType),\n        LIC: Math.round(moyenne - K_SIGMA * ecartType)\n    };\n    flow.set(\"limites_spc\", limites);\n\n    node.warn(\"Baseline etablie : moyenne=\" + limites.moyenne + \"ms, sigma=\" + limites.sigma);\n}\n\n// --- Phase 2 : contrôle sur limites figées ---\nlet statut = \"OK\";\nlet alerte = false;\n\nif (cycle > limites.LSC) {\n    statut = \"DERIVE HAUTE - cycle trop long\";\n    alerte = true;\n} else if (cycle < limites.LIC) {\n    statut = \"DERIVE BASSE - cycle anormalement court\";\n    alerte = true;\n}\n\n// Détection de tendance : 7 points consécutifs du même côté\nlet tendance = flow.get(\"tendance\") || 0;\nif (cycle > limites.moyenne) {\n    tendance = tendance > 0 ? tendance + 1 : 1;\n} else {\n    tendance = tendance < 0 ? tendance - 1 : -1;\n}\nflow.set(\"tendance\", tendance);\n\nif (Math.abs(tendance) >= 7 && !alerte) {\n    statut = \"TENDANCE - \" + Math.abs(tendance) + \" cycles consecutifs \"\n        + (tendance > 0 ? \"au-dessus\" : \"en-dessous\") + \" de la moyenne\";\n    alerte = true;\n}\n\nmsg.payload = {\n    phase: \"CONTROLE\",\n    cycle: cycle,\n    moyenne: limites.moyenne,\n    LSC: limites.LSC,\n    LIC: limites.LIC,\n    statut: statut,\n    alerte: alerte\n};\n\nreturn msg;",
+        "func": "// --- Garde-fou qualite -------------------------------------------------\n// Une piece issue d'un cycle INTERROMPU n'est pas representative du\n// procede : sa duree fausserait la moyenne et les limites de controle.\n// Elle est donc exclue de la carte SPC.\nif (msg.payload && msg.payload.rebut === true) { return null; }\n// -----------------------------------------------------------------------// --- Paramètres ---\nconst N_BASELINE = 10;        // 30-50 en production\nconst K_SIGMA = 3;            // limites à ±3σ (règle classique SPC)\n\nconst cycle = msg.payload.dernier_cycle;\n\n// --- Phase 1 : apprentissage ---\nlet baseline = flow.get(\"baseline\") || [];\nlet limites = flow.get(\"limites_spc\");\n\nif (!limites) {\n    baseline.push(cycle);\n    flow.set(\"baseline\", baseline);\n\n    if (baseline.length < N_BASELINE) {\n        msg.payload = {\n            phase: \"APPRENTISSAGE\",\n            progression: baseline.length + \"/\" + N_BASELINE,\n            statut: \"OK\"\n        };\n        return msg;\n    }\n\n    // Calcul de la moyenne et de l'écart-type\n    const moyenne = baseline.reduce((a, b) => a + b, 0) / baseline.length;\n    const variance = baseline.reduce((a, b) => a + Math.pow(b - moyenne, 2), 0) / baseline.length;\n    const ecartType = Math.sqrt(variance);\n\n    limites = {\n        moyenne: Math.round(moyenne),\n        sigma: Math.round(ecartType),\n        LSC: Math.round(moyenne + K_SIGMA * ecartType),\n        LIC: Math.round(moyenne - K_SIGMA * ecartType)\n    };\n    flow.set(\"limites_spc\", limites);\n\n    node.warn(\"Baseline etablie : moyenne=\" + limites.moyenne + \"ms, sigma=\" + limites.sigma);\n}\n\n// --- Phase 2 : contrôle sur limites figées ---\nlet statut = \"OK\";\nlet alerte = false;\n\nif (cycle > limites.LSC) {\n    statut = \"DERIVE HAUTE - cycle trop long\";\n    alerte = true;\n} else if (cycle < limites.LIC) {\n    statut = \"DERIVE BASSE - cycle anormalement court\";\n    alerte = true;\n}\n\n// Détection de tendance : 7 points consécutifs du même côté\nlet tendance = flow.get(\"tendance\") || 0;\nif (cycle > limites.moyenne) {\n    tendance = tendance > 0 ? tendance + 1 : 1;\n} else {\n    tendance = tendance < 0 ? tendance - 1 : -1;\n}\nflow.set(\"tendance\", tendance);\n\nif (Math.abs(tendance) >= 7 && !alerte) {\n    statut = \"TENDANCE - \" + Math.abs(tendance) + \" cycles consecutifs \"\n        + (tendance > 0 ? \"au-dessus\" : \"en-dessous\") + \" de la moyenne\";\n    alerte = true;\n}\n\nmsg.payload = {\n    phase: \"CONTROLE\",\n    cycle: cycle,\n    moyenne: limites.moyenne,\n    LSC: limites.LSC,\n    LIC: limites.LIC,\n    statut: statut,\n    alerte: alerte\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -730,7 +517,8 @@
         "wires": [
             [
                 "8cefd8802f9cd19d",
-                "02ac76553727214e"
+                "02ac76553727214e",
+                "5b7c3af83c67bcca"
             ]
         ]
     },
@@ -747,8 +535,8 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1500,
-        "y": 360,
+        "x": 1480,
+        "y": 180,
         "wires": []
     },
     {
@@ -769,8 +557,8 @@
         "checkall": "false",
         "repair": false,
         "outputs": 2,
-        "x": 1530,
-        "y": 240,
+        "x": 1610,
+        "y": 380,
         "wires": [
             [
                 "dda168f5d64abfee",
@@ -791,8 +579,8 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1740,
-        "y": 280,
+        "x": 1760,
+        "y": 600,
         "wires": []
     },
     {
@@ -800,18 +588,21 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Preparer prompt IA",
-        "func": "const PROMPT_SYSTEME = `Tu es un expert en maintenance industrielle, specialise sur la machine de rognage de cables ROUFIX.\nArchitecture ROUFIX : deux moteurs DC (M1 disque abrasif, M2 entrainement cable), un verin pneumatique de fixation, temporisation de rognage de 3 secondes.\nTu assistes un technicien de nuit face a une derive statistique (carte de controle SPC) sur les temps de cycle.\nCONTRAINTES ABSOLUES :\n1. Reponds EXCLUSIVEMENT en JSON valide.\n2. AUCUN texte avant ou apres, AUCUNE balise markdown.\n3. Chaque champ : 15 mots maximum.\n4. 2 a 3 causes maximum, par probabilite decroissante, basees uniquement sur les composants reels de ROUFIX.\nFormat exact :\n{\"anomalie\":\"...\",\"causes_probables\":[\"...\",\"...\"],\"action_immediate\":\"...\"}`;\n\nconst donnees = `\nDONNEES DE L'ALERTE :\n- Statut detecte : ${msg.payload.statut}\n- Temps de cycle actuel : ${msg.payload.cycle} ms\n- Moyenne de reference : ${msg.payload.moyenne} ms\n- Limite superieure (LSC) : ${msg.payload.LSC} ms\n- Limite inferieure (LIC) : ${msg.payload.LIC} ms\n- Ecart : ${msg.payload.cycle - msg.payload.moyenne} ms`;\n\nmsg.payload = {\n    model: \"llama3.2\",\n    prompt: PROMPT_SYSTEME + donnees,\n    stream: false,\n    keep_alive: -1\n};\nmsg.requestTimeout = 40000;\nreturn msg;",
-        "outputs": 1,
+        "func": "// ============================================================\n// PREPARER PROMPT IA  --  version 5\n// Sortie 1 -> Ollama        Sortie 2 -> IHM (faits + attente)\n//\n// REPARTITION DES ROLES, mesuree et assumee :\n//   - Node-RED calcule les FAITS et la GRAVITE. C'est de l'arithmetique,\n//     un modele de 1 milliard de parametres s'en montre incapable : mesure\n//     faite, il rendait la meme reponse pour un depassement de 58 ms et un\n//     depassement de 2608 ms.\n//   - L'IA CLASSE les causes et choisit le geste, dans le referentiel\n//     correspondant a la gravite. C'est la sa valeur ajoutee.\n// Les enum du schema rendent toute reponse hors referentiel impossible.\n// ============================================================\n\nconst p = msg.payload || {};\nconst MAINTENANT = Date.now();\n\n// --- 1. Famille de l'alerte ---\nlet sens = \"tendance\";\nif (p.type_alerte === \"defaut\")        { sens = \"defaut\"; }\nelse if (/HAUTE/i.test(p.statut))      { sens = \"long\"; }\nelse if (/BASSE/i.test(p.statut))      { sens = \"court\"; }\n\n// --- 2. GRAVITE, calculee ici ---\n// Une derive de quelques pour cent n'a pas les memes causes qu'un ecart\n// massif : la premiere evoque une usure ou un reglage, la seconde un\n// blocage ou une panne franche.\nconst SEUIL_GRAVITE = 0.25;          // 25 % d'ecart relatif\nconst SEUIL_THERMIQUE = 30;          // degres au-dessus du seuil d'alarme\nlet niveau = \"modere\";\nlet ampleur = \"\";\n\nif (sens === \"long\" || sens === \"court\") {\n    const ecartRelatif = p.moyenne ? Math.abs(p.cycle - p.moyenne) / p.moyenne : 0;\n    niveau = ecartRelatif >= SEUIL_GRAVITE ? \"severe\" : \"modere\";\n    ampleur = \"- Ecart relatif : \" + Math.round(ecartRelatif * 100) + \" % de la moyenne de reference\";\n} else if (sens === \"defaut\") {\n    // La machine n'a pas de sonde de temperature : l'information disponible\n    // est le ou les relais thermiques declenches (RTH1 sur M1, RTH2 sur M2).\n    // Les deux ensemble signent une cause commune (blocage, alimentation).\n    if (p.moteur === \"M1+M2\") {\n        niveau = \"severe\";\n        ampleur = \"- Les DEUX relais thermiques ont declenche (M1 et M2)\";\n    } else if (p.temperature != null) {\n        const depassement = p.temperature - 80;\n        niveau = depassement >= SEUIL_THERMIQUE ? \"severe\" : \"modere\";\n        ampleur = \"- Depassement du seuil thermique (80 degres) : \" + depassement + \" degres\";\n    } else {\n        niveau = \"modere\";\n        ampleur = p.moteur ? (\"- Relais thermique declenche : \" + p.moteur) : \"\";\n    }\n}\n\n// --- 3. Referentiel de maintenance ROUFIX, par famille ET par gravite ---\nconst REF = {\n    long: {\n        modere: {\n            causes: [\"Disque abrasif M1 use\", \"Moteur M1 en sous-regime\",\n                     \"Temporisation de rognage trop longue\", \"Pression pneumatique insuffisante\",\n                     \"Verin pneumatique de fixation lent\"],\n            actions: [\"Controler l'usure du disque abrasif M1, le remplacer si necessaire\",\n                      \"Controler le reglage de la temporisation de rognage\",\n                      \"Verifier la pression du reseau pneumatique alimentant le verin\",\n                      \"Controler l'alimentation et le regime du moteur M1\"]\n        },\n        severe: {\n            causes: [\"Bourrage du cable dans la zone de rognage\", \"Blocage mecanique du disque abrasif\",\n                     \"Verin de fixation bloque en position\", \"Moteur M1 en defaut ou desaccouple\",\n                     \"Disque abrasif casse ou desserre\"],\n            actions: [\"Consigner la machine et degager le cable de la zone de rognage\",\n                      \"Hors tension, verifier la rotation libre du disque abrasif\",\n                      \"Controler l'accouplement et l'alimentation du moteur M1\",\n                      \"Verifier l'etat et le serrage du disque abrasif\"]\n        }\n    },\n    court: {\n        modere: {\n            causes: [\"Temporisation de rognage trop courte\", \"Capteur de position deregle\",\n                     \"Pression pneumatique trop elevee\"],\n            actions: [\"Controler le reglage de la temporisation de rognage\",\n                      \"Controler le reglage du capteur de position\",\n                      \"Ajuster la pression du reseau pneumatique\"]\n        },\n        severe: {\n            causes: [\"Cycle avorte : course du verin non effectuee\", \"Cable non engage : rognage a vide\",\n                     \"Capteur de position defaillant ou en court-circuit\", \"Moteur M2 en survitesse\"],\n            actions: [\"Verifier que le verin effectue sa course complete\",\n                      \"Verifier la presence et l'engagement du cable dans le guide\",\n                      \"Controler le capteur de position et son cablage\",\n                      \"Controler le regime du moteur M2\"]\n        }\n    },\n    defaut: {\n        // RTH1 protege M1 (disque abrasif) : l'effort vient de la coupe\n        M1: {\n            causes: [\"Disque abrasif M1 use : effort de coupe excessif\",\n                     \"Blocage ou frottement du disque abrasif\",\n                     \"Ventilation du moteur M1 obstruee\",\n                     \"Cadence trop elevee pour le refroidissement de M1\",\n                     \"Relais thermique RTH1 deregle ou defaillant\"],\n            actions: [\"Laisser refroidir M1, puis controler l'usure du disque abrasif\",\n                      \"Hors tension, verifier la rotation libre du disque abrasif\",\n                      \"Degager et nettoyer la ventilation du moteur M1\",\n                      \"Controler le calibrage du relais thermique RTH1\"]\n        },\n        // RTH2 protege M2 (entrainement du cable) : l'effort vient du cable\n        M2: {\n            causes: [\"Bourrage ou coincement du cable dans le guide\",\n                     \"Cable de section trop importante pour l'entrainement\",\n                     \"Frein ou point dur sur la ligne d'entrainement\",\n                     \"Ventilation du moteur M2 obstruee\",\n                     \"Relais thermique RTH2 deregle ou defaillant\"],\n            actions: [\"Consigner la machine et degager le cable du guide\",\n                      \"Verifier la section du cable et le reglage du guide\",\n                      \"Hors tension, verifier la rotation libre de l'entrainement M2\",\n                      \"Controler le calibrage du relais thermique RTH2\"]\n        },\n        modere: {\n            causes: [\"Echauffement progressif d'un moteur par usure\",\n                     \"Ventilation ou refroidissement insuffisant\",\n                     \"Cadence trop elevee pour le refroidissement\",\n                     \"Relais thermique deregle ou defaillant\"],\n            actions: [\"Laisser refroidir les moteurs, puis controler leur temperature\",\n                      \"Verifier la ventilation et le degagement des moteurs\",\n                      \"Controler l'usure du disque abrasif M1\",\n                      \"Controler le calibrage des relais thermiques\"]\n        },\n        severe: {\n            causes: [\"Blocage mecanique du disque abrasif\", \"Bourrage du cable dans la zone de rognage\",\n                     \"Court-circuit ou defaut d'alimentation du moteur\",\n                     \"Roulement de moteur grippe\"],\n            actions: [\"Consigner la machine avant toute intervention\",\n                      \"Hors tension, verifier la rotation libre du disque abrasif\",\n                      \"Controler l'alimentation et le serrage des connexions de puissance\",\n                      \"Faire intervenir la maintenance de niveau 2\"]\n        }\n    },\n    tendance: {\n        modere: {\n            causes: [\"Disque abrasif M1 use\", \"Moteur M1 en sous-regime\",\n                     \"Pression pneumatique en baisse progressive\",\n                     \"Temporisation de rognage mal reglee\", \"Capteur de position deregle\"],\n            actions: [\"Controler l'usure du disque abrasif M1\",\n                      \"Verifier la pression du reseau pneumatique\",\n                      \"Controler l'alimentation et le regime du moteur M1\",\n                      \"Controler le reglage de la temporisation de rognage\",\n                      \"Controler le capteur de position et son cablage\"]\n        }\n    }\n};\n// Sur un defaut thermique, le relais qui a declenche designe l'organe :\n// le referentiel est alors cible sur ce moteur plutot que sur la gravite.\nlet ref;\nif (sens === \"defaut\" && p.moteur && REF.defaut[p.moteur]) {\n    ref = REF.defaut[p.moteur];\n} else {\n    ref = REF[sens][niveau] || REF[sens].modere;\n}\n\n// --- 4. Verrou anti-rafale ---\n// Une derive persistante leve une alerte a CHAQUE cycle (~5 s) alors qu'un\n// diagnostic prend ~10 s : sans verrou les appels s'empilent. On ignore\n// donc toute alerte tant qu'un appel est en cours. Le delai de 2 min entre\n// deux diagnostics de meme nature ne s'applique que tant que le diagnostic\n// precedent est encore affiche : si le procede est revenu dans ses limites\n// puis derive a nouveau, l'operateur a un diagnostic neuf sans attendre.\nconst enCours = (flow.get(\"ia_en_cours\") === true)\n             && ((MAINTENANT - (flow.get(\"ia_debut\") || 0)) < 60000);\nif (enCours) {\n    node.status({ fill: \"blue\", shape: \"ring\", text: \"appel en cours - alerte ignoree\" });\n    return null;\n}\nconst DELAI_MIN = 2 * 60 * 1000;\nconst signature = sens + \"/\" + niveau;\nif (flow.get(\"diag_anomalie\")\n    && flow.get(\"ia_dernier_sens\") === signature\n    && msg.topic !== \"test\"\n    && (MAINTENANT - (flow.get(\"ia_dernier_appel\") || 0)) < DELAI_MIN) {\n    node.status({ fill: \"grey\", shape: \"ring\", text: \"diagnostic recent - alerte ignoree\" });\n    return null;\n}\n\n// --- 5. Les FAITS : calcules ici, jamais confies au modele ---\nconst GRAVITE = { modere: \"moderee\", severe: \"severe\" };\nlet anomalieSPC, spc = null, donnees;\n\nif (sens === \"defaut\") {\n    anomalieSPC = \"Arrêt sécurité : \" + (p.libelle || p.etat)\n                + (p.code_defaut ? \" (\" + p.code_defaut + \")\" : \"\");\n    donnees = \"- Nature : arret de securite, la production est stoppee\"\n            + \"\\n- Cause relevee par l'automate : \" + (p.libelle || p.etat)\n            + (p.moteur ? \"\\n- Relais thermique declenche : \" + p.moteur : \"\")\n            + (ampleur ? \"\\n\" + ampleur : \"\")\n            + \"\\n- Pieces produites depuis le debut du poste : \" + p.nb_pieces;\n} else {\n    if (sens === \"long\") {\n        anomalieSPC = \"Cycle de \" + p.cycle + \" ms : \" + (p.cycle - p.LSC)\n                    + \" ms au-dessus de la limite haute (LSC \" + p.LSC + \" ms)\";\n    } else if (sens === \"court\") {\n        anomalieSPC = \"Cycle de \" + p.cycle + \" ms : \" + (p.LIC - p.cycle)\n                    + \" ms sous la limite basse (LIC \" + p.LIC + \" ms)\";\n    } else {\n        anomalieSPC = p.statut + \" (moyenne de reference \" + p.moyenne + \" ms)\";\n    }\n    spc = {\n        statut: p.statut, cycle: p.cycle, moyenne: p.moyenne,\n        LSC: p.LSC, LIC: p.LIC, ecart: p.cycle - p.moyenne,\n        sens: sens, niveau: niveau\n    };\n    donnees = \"- Nature : \" + p.statut\n            + \"\\n- Temps de cycle mesure : \" + p.cycle + \" ms\"\n            + \"\\n- Moyenne de reference : \" + p.moyenne + \" ms\"\n            + \"\\n- Ecart a la moyenne : \" + (p.cycle - p.moyenne) + \" ms\"\n            + (ampleur ? \"\\n\" + ampleur : \"\")\n            + \"\\n- Limites de controle : LIC \" + p.LIC + \" ms / LSC \" + p.LSC + \" ms\";\n}\n\nconst msgAttente = {\n    payload: {\n        ia_en_cours: true, anomalie_spc: anomalieSPC,\n        spc: spc, famille: sens, gravite: GRAVITE[niveau]\n    }\n};\n\n// --- 6. Requete Ollama : classement sous contrainte ---\nconst CONTEXTE = (sens === \"defaut\")\n    ? \"La machine vient de s'arreter en securite. Determine l'origine la plus probable de l'arret.\"\n    : \"Une carte de controle SPC signale une derive des temps de cycle.\";\n\nconst PROMPT = `Tu es un technicien de maintenance expert de la machine de rognage de cables ROUFIX.\nOrganes : moteur M1 (disque abrasif), moteur M2 (entrainement du cable), verin pneumatique de fixation, temporisation de rognage de 3 s, capteurs de position et de securite.\n${CONTEXTE}\nGravite evaluee : ${GRAVITE[niveau]}.\nCAUSES :\n${ref.causes.map((c, i) => (i + 1) + \". \" + c).join(\"\\n\")}\nACTIONS :\n${ref.actions.map((c, i) => (i + 1) + \". \" + c).join(\"\\n\")}\n\nMESURES :\n${donnees}\n\nClasse les causes de la plus probable a la moins probable au vu de ces mesures, retiens les 2 premieres, puis l'action a mener en priorite.`;\n\nmsg.payload = {\n    model: \"llama3.2:1b\",\n    prompt: PROMPT,\n    format: {\n        type: \"object\",\n        properties: {\n            causes_probables: {\n                type: \"array\",\n                items: { type: \"string\", enum: ref.causes },\n                minItems: 2, maxItems: 2\n            },\n            action_immediate: { type: \"string\", enum: ref.actions }\n        },\n        required: [\"causes_probables\", \"action_immediate\"]\n    },\n    stream: false,\n    keep_alive: -1,          // modele garde en RAM : evite 7 s de rechargement\n    options: {\n        // 130 et non 80 : en dessous, la reponse JSON est tronquee en plein\n        // milieu et le diagnostic bascule inutilement en repli (mesure).\n        num_predict: 130,\n        temperature: 0.2,\n        top_p: 0.9,\n        num_ctx: 1024,\n        repeat_penalty: 1.1\n    }\n};\n\n// Contexte transporte jusqu'a l'IHM, y compris par le chemin d'erreur\nmsg.spc = spc;\nmsg.anomalie_spc = anomalieSPC;\nmsg.famille = sens;\nmsg.gravite = GRAVITE[niveau];\nmsg.ia_t0 = MAINTENANT;\nmsg.requestTimeout = 40000;\n\nflow.set(\"ia_en_cours\", true);\nflow.set(\"ia_debut\", MAINTENANT);\nflow.set(\"ia_dernier_appel\", MAINTENANT);\nflow.set(\"ia_dernier_sens\", signature);\n\nnode.status({ fill: \"yellow\", shape: \"dot\", text: \"diagnostic en cours (\" + signature + \")\" });\n\nreturn [msg, msgAttente];",
+        "outputs": 2,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1770,
-        "y": 180,
+        "x": 1850,
+        "y": 380,
         "wires": [
             [
                 "b8fbb27e26bb2ce1"
+            ],
+            [
+                "5b7c3af83c67bcca"
             ]
         ]
     },
@@ -829,13 +620,13 @@
         "proxy": "",
         "insecureHTTPParser": false,
         "authType": "",
-        "senderr": false,
+        "senderr": true,
         "headers": [],
-        "x": 1940,
-        "y": 240,
+        "x": 1960,
+        "y": 300,
         "wires": [
             [
-                "4252840c2aa5036c",
+                "7d0be6929833176c",
                 "5b96b50bc374de10"
             ]
         ]
@@ -853,25 +644,9 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 2140,
-        "y": 300,
+        "x": 2160,
+        "y": 680,
         "wires": []
-    },
-    {
-        "id": "4252840c2aa5036c",
-        "type": "json",
-        "z": "4b8bea3d1e25ea78",
-        "name": "",
-        "property": "payload.response",
-        "action": "",
-        "pretty": false,
-        "x": 2130,
-        "y": 160,
-        "wires": [
-            [
-                "7d0be6929833176c"
-            ]
-        ]
     },
     {
         "id": "0d0c7220e86f7bb4",
@@ -882,8 +657,8 @@
             "b8fbb27e26bb2ce1"
         ],
         "uncaught": false,
-        "x": 2100,
-        "y": 80,
+        "x": 2040,
+        "y": 120,
         "wires": [
             [
                 "432854d0791e709a"
@@ -895,15 +670,15 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Fallback IA",
-        "func": "msg.payload = {\n    response: {\n        anomalie: \"Diagnostic IA local injoignable (timeout ou service arrete).\",\n        causes_probables: [\n            \"Service Ollama arrete\",\n            \"Surcharge processeur\"\n        ],\n        action_immediate: \"IA INDISPONIBLE - APPLIQUER LA GAMME DE MAINTENANCE STANDARD (Niv. 1)\"\n    }\n};\nreturn msg;",
+        "func": "// ============================================================\n// FALLBACK IA\n// Declenche par le noeud catch \"Erreur IA\" (scope = http request Ollama).\n// Fonctionne reellement depuis que \"senderr\" est passe a true : timeout,\n// service arrete et erreur reseau levent bien une exception captee ici.\n//\n// Le message d'origine est conserve par le noeud catch : les faits SPC\n// (msg.anomalie_spc, msg.spc) restent donc disponibles et continuent\n// d'etre affiches meme quand l'IA est injoignable.\n// ============================================================\n\nconst detail = (msg.error && msg.error.message)\n    ? String(msg.error.message).substring(0, 90)\n    : \"Aucune reponse du service local\";\n\nmsg.payload = {\n    causes_probables: [\n        \"Service Ollama arrete, surcharge ou delai depasse\",\n        \"Detail technique : \" + detail\n    ],\n    action_immediate: \"IA INDISPONIBLE - APPLIQUER LA GAMME DE MAINTENANCE STANDARD (Niv. 1)\",\n    fallback: true\n};\n\nnode.status({ fill: \"red\", shape: \"dot\", text: \"repli : \" + detail.substring(0, 30) });\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2310,
-        "y": 120,
+        "x": 2250,
+        "y": 220,
         "wires": [
             [
                 "7d0be6929833176c"
@@ -915,18 +690,20 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Extraire diagnostic",
-        "func": "// Cas 1 : reponse valide de l'IA\nif (msg.payload && msg.payload.response && msg.payload.response.anomalie) {\n    msg.payload = msg.payload.response;\n    return msg;\n}\n\n// Cas 2 : erreur ou reponse malformee -> fallback\nmsg.payload = {\n    anomalie: \"Diagnostic IA local injoignable.\",\n    causes_probables: [\n        \"Service Ollama arrete\",\n        \"Surcharge processeur\"\n    ],\n    action_immediate: \"IA INDISPONIBLE - APPLIQUER LA GAMME DE MAINTENANCE STANDARD (Niv. 1)\"\n};\nreturn msg;",
+        "func": "// ============================================================\n// EXTRAIRE DIAGNOSTIC  --  version robuste\n// Assemble le diagnostic affiche : les FAITS viennent de Node-RED\n// (msg.anomalie_spc, calcule dans \"Preparer prompt IA\"), le JUGEMENT\n// vient d'Ollama. Si le modele echoue, les faits restent affiches.\n// Ne laisse JAMAIS la chaine muette.\n// ============================================================\n\nconst p = msg.payload;\nconst dureeIA = msg.ia_t0 ? (Date.now() - msg.ia_t0) : null;\n\n// Une reponse exploitable contient au moins des causes ou une action.\nconst utilisable = (o) => o && (Array.isArray(o.causes_probables) || o.action_immediate);\n\n// Reponse HTTP en erreur (500, 404...) : Ollama peut repondre 4xx/5xx sans\n// lever d'exception, on bascule en repli sans tenter de parsing inutile.\nconst httpKo = (typeof msg.statusCode === \"number\" && msg.statusCode >= 400);\n\nlet diag = null;\nif (!httpKo) {\n    // Forme 1 : payload deja au bon format (sortie du noeud \"Fallback IA\")\n    if (utilisable(p)) { diag = p; }\n    // Forme 2 : payload = { response: {...} }  (objet deja parse)\n    else if (p && typeof p.response === \"object\" && utilisable(p.response)) { diag = p.response; }\n    // Forme 3 : payload = { response: \"{...}\" }  (chaine JSON, cas nominal)\n    else if (p && typeof p.response === \"string\") {\n        try {\n            const parsed = JSON.parse(p.response.trim());\n            if (utilisable(parsed)) { diag = parsed; }\n        } catch (e) {\n            node.warn(\"JSON invalide recu d'Ollama (reponse tronquee ?) : \" + p.response);\n        }\n    }\n    // Forme 4 : payload = chaine brute non parsee par le noeud http request\n    else if (typeof p === \"string\") {\n        try {\n            const parsed = JSON.parse(p);\n            const src = (parsed && parsed.response) ? parsed.response : parsed;\n            const obj = (typeof src === \"string\") ? JSON.parse(src) : src;\n            if (utilisable(obj)) { diag = obj; }\n        } catch (e) {\n            node.warn(\"Reponse Ollama non exploitable : \" + p.substring(0, 120));\n        }\n    }\n}\n\n// Normalisation : borne la longueur pour que l'IHM reste lisible\nconst texte = (v, max) => String(v == null ? \"\" : v).trim().substring(0, max);\n\nif (diag) {\n    const causes = Array.isArray(diag.causes_probables)\n        ? diag.causes_probables\n        : [diag.causes_probables];\n\n    msg.payload = {\n        // Faits mesures : prioritaires sur toute formulation du modele\n        anomalie: msg.anomalie_spc || texte(diag.anomalie, 140) || \"Derive detectee sur le temps de cycle\",\n        causes_probables: causes.filter(Boolean).slice(0, 3).map(c => texte(c, 140)),\n        action_immediate: texte(diag.action_immediate, 160) || \"Verifier la machine\",\n        fallback: diag.fallback === true,\n        spc: msg.spc || null,\n        duree_ia: dureeIA\n    };\n    node.status({\n        fill: msg.payload.fallback ? \"red\" : \"green\", shape: \"dot\",\n        text: (msg.payload.fallback ? \"repli\" : \"diagnostic\") + (dureeIA ? \" - \" + Math.round(dureeIA / 100) / 10 + \" s\" : \"\")\n    });\n    return msg;\n}\n\n// Repli : l'IA n'a rien fourni d'exploitable, les faits restent affiches\nnode.warn(\"Fallback IA declenche (statusCode=\" + msg.statusCode + \"). Payload recu : \" + JSON.stringify(msg.payload));\nmsg.payload = {\n    anomalie: msg.anomalie_spc || \"Derive detectee sur le temps de cycle\",\n    causes_probables: [\n        httpKo ? (\"Service IA en erreur (HTTP \" + msg.statusCode + \")\")\n               : \"Service Ollama arrete ou reponse invalide\",\n        \"Diagnostic automatique indisponible\"\n    ],\n    action_immediate: \"IA INDISPONIBLE - APPLIQUER LA GAMME DE MAINTENANCE STANDARD (Niv. 1)\",\n    fallback: true,\n    spc: msg.spc || null,\n    duree_ia: dureeIA\n};\nnode.status({ fill: \"red\", shape: \"dot\", text: \"repli - reponse inexploitable\" });\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2430,
-        "y": 240,
+        "x": 2510,
+        "y": 280,
         "wires": [
             [
-                "5b7c3af83c67bcca"
+                "5b7c3af83c67bcca",
+                "1482dfe00655451b",
+                "206d14c5e5b3789a"
             ]
         ]
     },
@@ -939,14 +716,14 @@
         "order": 2,
         "width": 0,
         "height": 0,
-        "format": "<!--\n  ROUFIX — panneau de supervision\n  Node-RED dashboard 1.x — nœud ui_template (scope: Widget)\n\n  CONFIG DU NŒUD (obligatoire, sinon la scrollbar revient) :\n    Size  →  largeur : auto ou 12   |   hauteur : 0  (= auto)\n    Group →  décocher \"Display group name\" si tu veux le rendu plein cadre\n    Cocher \"Add output messages to...\" si tu utilises le bouton d'acquittement\n\n  PAYLOAD ATTENDU (voir roufix-payload-exemple.js) :\n    msg.payload.machine            \"ROUFIX 01\"\n    msg.payload.etat               \"MARCHE\" | \"ATTENTE\" | \"DEFAUT\" | \"ARRET\"\n    msg.payload.communication      true / false\n    msg.payload.cycle              \"M1\"\n    msg.payload.cadence            \"42 pcs/h\"\n    msg.payload.horodatage         \"14:32:07\"\n    msg.payload.anomalie           texte, ou vide/absent si tout va bien\n    msg.payload.causes_probables   tableau de chaînes\n    msg.payload.action_immediate   texte\n    msg.payload.criticite          \"haute\" | \"moyenne\" | \"basse\"\n-->\n\n<div class=\"rfx\" ng-class=\"'rfx--' + (msg.payload.etat || 'INCONNU' | lowercase)\">\n\n    <style>\n        .rfx {\n            --rfx-ink: #12161c;\n            --rfx-panel: #1a1f27;\n            --rfx-panel-2: #212831;\n            --rfx-line: rgba(255, 255, 255, .08);\n            --rfx-line-2: rgba(255, 255, 255, .14);\n            --rfx-text: #e6eaf0;\n            --rfx-muted: #8b94a3;\n            --rfx-faint: #626b79;\n\n            --rfx-green: #3fbf7f;\n            --rfx-amber: #f0a93b;\n            --rfx-red: #f2555a;\n            --rfx-blue: #6ea8ff;\n\n            --rfx-state: var(--rfx-faint);\n\n            font-family: \"Inter\", \"Roboto\", -apple-system, \"Segoe UI\", sans-serif;\n            color: var(--rfx-text);\n            background: var(--rfx-ink);\n            border-radius: 10px;\n            overflow: hidden;\n            display: block;\n        }\n\n        .rfx--marche {\n            --rfx-state: var(--rfx-green);\n        }\n\n        .rfx--attente {\n            --rfx-state: var(--rfx-amber);\n        }\n\n        .rfx--defaut {\n            --rfx-state: var(--rfx-red);\n        }\n\n        .rfx--arret {\n            --rfx-state: var(--rfx-faint);\n        }\n\n        /* ---- bandeau d'en-tête : le rail de statut est la signature du panneau ---- */\n        .rfx-head {\n            display: flex;\n            align-items: center;\n            gap: 12px;\n            padding: 14px 16px;\n            background: var(--rfx-panel);\n            border-bottom: 1px solid var(--rfx-line);\n            border-left: 3px solid var(--rfx-state);\n        }\n\n        .rfx-head__name {\n            font-size: 15px;\n            font-weight: 500;\n            letter-spacing: .01em;\n            margin: 0;\n            flex: 1;\n        }\n\n        .rfx-head__time {\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 12px;\n            color: var(--rfx-faint);\n            font-variant-numeric: tabular-nums;\n        }\n\n        .rfx-pill {\n            display: inline-flex;\n            align-items: center;\n            gap: 7px;\n            padding: 4px 11px 4px 9px;\n            border: 1px solid var(--rfx-state);\n            border-radius: 999px;\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 11px;\n            letter-spacing: .09em;\n            color: var(--rfx-state);\n            white-space: nowrap;\n        }\n\n        .rfx-dot {\n            width: 6px;\n            height: 6px;\n            border-radius: 50%;\n            background: var(--rfx-state);\n            flex: none;\n        }\n\n        .rfx--marche .rfx-dot {\n            animation: rfx-pulse 2s ease-in-out infinite;\n        }\n\n        @keyframes rfx-pulse {\n            50% {\n                opacity: .25;\n            }\n        }\n\n        @media (prefers-reduced-motion: reduce) {\n            .rfx--marche .rfx-dot {\n                animation: none;\n            }\n        }\n\n        /* ---- tuiles de mesure ---- */\n        .rfx-grid {\n            display: grid;\n            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));\n            gap: 1px;\n            background: var(--rfx-line);\n            border-bottom: 1px solid var(--rfx-line);\n        }\n\n        .rfx-tile {\n            background: var(--rfx-panel);\n            padding: 13px 16px;\n        }\n\n        .rfx-tile__label {\n            margin: 0 0 6px;\n            font-size: 10px;\n            letter-spacing: .13em;\n            text-transform: uppercase;\n            color: var(--rfx-faint);\n        }\n\n        .rfx-tile__value {\n            margin: 0;\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 17px;\n            font-weight: 500;\n            letter-spacing: .02em;\n            font-variant-numeric: tabular-nums;\n        }\n\n        .rfx-tile__value--state {\n            color: var(--rfx-state);\n        }\n\n        .rfx-tile__value--ok {\n            color: var(--rfx-green);\n        }\n\n        .rfx-tile__value--ko {\n            color: var(--rfx-red);\n        }\n\n        /* ---- bloc diagnostic ---- */\n        .rfx-diag {\n            padding: 16px;\n        }\n\n        .rfx-diag__head {\n            display: flex;\n            align-items: center;\n            gap: 8px;\n            margin-bottom: 14px;\n        }\n\n        .rfx-diag__title {\n            margin: 0;\n            flex: 1;\n            font-size: 10px;\n            letter-spacing: .13em;\n            text-transform: uppercase;\n            color: var(--rfx-muted);\n        }\n\n        .rfx-badge {\n            font-size: 10px;\n            letter-spacing: .08em;\n            text-transform: uppercase;\n            padding: 3px 9px;\n            border-radius: 4px;\n            background: rgba(242, 85, 90, .13);\n            color: var(--rfx-red);\n        }\n\n        .rfx-badge--moyenne {\n            background: rgba(240, 169, 59, .13);\n            color: var(--rfx-amber);\n        }\n\n        .rfx-badge--basse {\n            background: rgba(110, 168, 255, .13);\n            color: var(--rfx-blue);\n        }\n\n        .rfx-anomalie {\n            margin: 0 0 16px;\n            font-size: 15px;\n            line-height: 1.45;\n        }\n\n        .rfx-causes {\n            list-style: none;\n            margin: 0 0 16px;\n            padding: 0;\n        }\n\n        .rfx-causes li {\n            display: flex;\n            gap: 11px;\n            align-items: baseline;\n            padding: 10px 0;\n            border-top: 1px solid var(--rfx-line);\n            font-size: 13.5px;\n            line-height: 1.45;\n            color: #c9d0da;\n        }\n\n        .rfx-causes li:last-child {\n            border-bottom: 1px solid var(--rfx-line);\n        }\n\n        .rfx-causes__idx {\n            font-family: ui-monospace, \"Roboto Mono\", \"Consolas\", monospace;\n            font-size: 11px;\n            color: var(--rfx-faint);\n            flex: none;\n        }\n\n        .rfx-action {\n            background: var(--rfx-panel-2);\n            border-left: 3px solid var(--rfx-red);\n            padding: 12px 14px;\n        }\n\n        .rfx-action__label {\n            margin: 0 0 5px;\n            font-size: 10px;\n            letter-spacing: .13em;\n            text-transform: uppercase;\n            color: var(--rfx-red);\n        }\n\n        .rfx-action__text {\n            margin: 0;\n            font-size: 14px;\n            line-height: 1.45;\n        }\n\n        .rfx-ack {\n            margin-top: 14px;\n            width: 100%;\n            background: transparent;\n            border: 1px solid var(--rfx-line-2);\n            border-radius: 6px;\n            color: var(--rfx-text);\n            padding: 9px 14px;\n            font-family: inherit;\n            font-size: 13px;\n            cursor: pointer;\n            transition: background .15s ease, border-color .15s ease;\n        }\n\n        .rfx-ack:hover {\n            background: var(--rfx-panel-2);\n            border-color: var(--rfx-muted);\n        }\n\n        .rfx-ack:active {\n            transform: scale(.99);\n        }\n\n        .rfx-ack:focus-visible {\n            outline: 2px solid var(--rfx-blue);\n            outline-offset: 2px;\n        }\n\n        /* ---- état sain ---- */\n        .rfx-clear {\n            display: flex;\n            align-items: center;\n            gap: 10px;\n            padding: 18px 16px;\n            font-size: 14px;\n            color: var(--rfx-muted);\n        }\n\n        .rfx-clear__dot {\n            width: 7px;\n            height: 7px;\n            border-radius: 50%;\n            background: var(--rfx-green);\n            flex: none;\n        }\n\n        /* neutralise le cadre du widget Node-RED */\n        .nr-dashboard-template {\n            overflow: visible !important;\n            padding: 0 !important;\n        }\n    </style>\n\n    <div class=\"rfx-head\">\n        <span class=\"rfx-dot\"></span>\n        <h3 class=\"rfx-head__name\">{{msg.payload.machine || 'ROUFIX'}}</h3>\n        <span class=\"rfx-head__time\">{{msg.payload.horodatage}}</span>\n    </div>\n\n    <div class=\"rfx-grid\">\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">État actuel</p>\n            <p class=\"rfx-tile__value rfx-tile__value--state\">{{msg.payload.etat || '—'}}</p>\n        </div>\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">Communication</p>\n            <p class=\"rfx-tile__value\"\n                ng-class=\"msg.payload.communication ? 'rfx-tile__value--ok' : 'rfx-tile__value--ko'\">\n                {{msg.payload.communication ? 'OK' : 'COUPÉE'}}\n            </p>\n        </div>\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">Cycle</p>\n            <p class=\"rfx-tile__value\">{{msg.payload.cycle || '—'}}</p>\n        </div>\n        <div class=\"rfx-tile\" ng-if=\"msg.payload.cadence\">\n            <p class=\"rfx-tile__label\">Cadence</p>\n            <p class=\"rfx-tile__value\">{{msg.payload.cadence}}</p>\n        </div>\n    </div>\n\n    <div class=\"rfx-diag\" ng-if=\"msg.payload.anomalie\">\n        <div class=\"rfx-diag__head\">\n            <p class=\"rfx-diag__title\">Diagnostic IA</p>\n            <span class=\"rfx-badge\"\n            ng-class=\"'rfx-badge--' + (msg.payload.criticite || 'haute')\">\n        {{msg.payload.criticite || 'haute'}}\n      </span>\n        </div>\n\n        <p class=\"rfx-anomalie\">{{msg.payload.anomalie}}</p>\n\n        <ul class=\"rfx-causes\" ng-if=\"msg.payload.causes_probables.length\">\n            <li ng-repeat=\"cause in msg.payload.causes_probables track by $index\">\n                <span class=\"rfx-causes__idx\">{{$index + 1}}</span>\n                <span>{{cause}}</span>\n            </li>\n        </ul>\n\n        <div class=\"rfx-action\" ng-if=\"msg.payload.action_immediate\">\n            <p class=\"rfx-action__label\">Action immédiate</p>\n            <p class=\"rfx-action__text\">{{msg.payload.action_immediate}}</p>\n        </div>\n\n        <button class=\"rfx-ack\"\n            ng-click=\"send({topic: 'acquittement', payload: msg.payload.anomalie})\">\n      Marquer comme traité\n    </button>\n    </div>\n\n    <div class=\"rfx-clear\" ng-if=\"!msg.payload.anomalie\">\n        <span class=\"rfx-clear__dot\"></span>\n        <span>Aucune anomalie détectée sur ce cycle.</span>\n    </div>\n\n</div>",
+        "format": "<!--\n  ROUFIX - Panneau de supervision operateur\n  Node-RED dashboard 1.x - noeud ui_template (scope: Widget)\n  Version claire et moderne : animations douces, indicateur de calcul IA,\n  hierarchie visuelle (alerte en tete) et historique des 3 dernieres alertes.\n  Aucun script : uniquement des directives AngularJS + CSS -> l'IHM ne peut\n  pas etre bloquee par le module IA.\n-->\n\n<div class=\"rfx\">\n\n<style>\n.rfx {\n    --rfx-bg:      #ffffff;\n    --rfx-soft:    #f7f9fc;\n    --rfx-line:    #e6ebf2;\n    --rfx-text:    #1f2d3d;\n    --rfx-muted:   #6b7789;\n    --rfx-faint:   #97a1b0;\n\n    --rfx-blue:    #2c5aa0;\n    --rfx-green:   #2e9e6b;\n    --rfx-amber:   #e8952a;\n    --rfx-red:     #e04b52;\n\n    font-family: 'Inter','Segoe UI',Roboto,-apple-system,sans-serif;\n    color: var(--rfx-text);\n    background: var(--rfx-bg);\n    border-radius: 14px;\n    overflow: hidden;\n    display: block;\n    box-shadow: 0 4px 18px rgba(31,45,61,.08);\n    border: 1px solid var(--rfx-line);\n    box-sizing: border-box;\n}\n.rfx *, .rfx *::before, .rfx *::after { box-sizing: border-box; }\n\n/* ---------- Animations communes ---------- */\n@keyframes rfx-pulse { 50% { opacity:.25; transform: scale(.82); } }\n@keyframes rfx-up    { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:none; } }\n@keyframes rfx-in    { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform:none; } }\n@keyframes rfx-rot   { to { transform: rotate(360deg); } }\n@keyframes rfx-slide { from { background-position: -220px 0; } to { background-position: 220px 0; } }\n@keyframes rfx-glow  { 0%,100% { box-shadow: inset 0 0 0 0 rgba(224,75,82,0); } 50% { box-shadow: inset 0 0 22px 0 rgba(224,75,82,.30); } }\n\n/* ---------- En-tete ---------- */\n.rfx-head {\n    display: flex;\n    flex-wrap: wrap;\n    align-items: center;\n    gap: 8px 10px;\n    padding: 13px 16px;\n    background: var(--rfx-soft);\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfx-head__name { font-size: 15px; font-weight: 600; margin: 0; flex: 1 1 auto; min-width: 0; }\n.rfx-dot {\n    width: 9px; height: 9px; border-radius: 50%;\n    background: var(--rfx-green); flex: none;\n    box-shadow: 0 0 0 4px rgba(46,158,107,.16);\n    animation: rfx-pulse 2s ease-in-out infinite;\n    transition: background .4s, box-shadow .4s;\n}\n.rfx-dot--ko { background: var(--rfx-red); box-shadow: 0 0 0 4px rgba(224,75,82,.18); }\n\n/* Pastille d'etat du module IA */\n.rfx-ia {\n    display: flex; align-items: center; gap: 6px;\n    font-size: 10px; font-weight: 700; letter-spacing: .1em;\n    padding: 4px 9px; border-radius: 999px;\n    background: #eef3fb; color: var(--rfx-blue);\n    animation: rfx-in .3s ease both;\n}\n.rfx-ia--off { background: #f1f3f6; color: var(--rfx-faint); }\n.rfx-ia--ko  { background: #fdeef0; color: var(--rfx-red); }\n.rfx-spin {\n    width: 11px; height: 11px; flex: none; border-radius: 50%;\n    border: 2px solid rgba(44,90,160,.22);\n    border-top-color: var(--rfx-blue);\n    animation: rfx-rot .8s linear infinite;\n}\n\n/* ---------- Bandeau d'alerte prioritaire ---------- */\n.rfx-strip {\n    display: flex; align-items: center; gap: 9px;\n    padding: 9px 16px;\n    background: #fff4f4;\n    border-bottom: 1px solid #f7d7d9;\n    color: #a32b32;\n    font-size: 12px; font-weight: 700; letter-spacing: .06em;\n    animation: rfx-in .35s ease both, rfx-glow 2.6s ease-in-out infinite;\n}\n.rfx-strip__dot {\n    width: 8px; height: 8px; border-radius: 50%;\n    background: var(--rfx-red); flex: none;\n    animation: rfx-pulse 1.2s ease-in-out infinite;\n}\n\n/* ---------- Tuiles ---------- */\n/* 3 tuiles : une seule ligne des 318 px (groupe de largeur 6). auto-fit\n   effondre les pistes vides, les 3 tuiles se partagent donc toujours la\n   largeur a parts egales, quel que soit le groupe. */\n.rfx-grid {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));\n    gap: 1px;\n    background: var(--rfx-line);\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfx-tile { background: var(--rfx-bg); padding: 11px 12px; min-width: 0; }\n.rfx-tile__label {\n    margin: 0 0 5px;\n    font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 600;\n    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;\n}\n.rfx-tile__value {\n    margin: 0; font-size: 16px; font-weight: 600;\n    font-variant-numeric: tabular-nums;\n    transition: color .35s ease;   /* changement d'etat : fondu de couleur */\n}\n.rfx-tile__value--ok    { color: var(--rfx-green); }\n.rfx-tile__value--ko    { color: var(--rfx-red); }\n.rfx-state--ok   { color: var(--rfx-green); }\n.rfx-state--bad  { color: var(--rfx-red); }\n.rfx-state--idle { color: var(--rfx-blue); }\n\n/* ---------- Attente du diagnostic IA ---------- */\n.rfx-wait { padding: 14px 16px; border-bottom: 1px solid var(--rfx-line); animation: rfx-in .3s ease both; }\n.rfx-wait__row { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--rfx-muted); }\n.rfx-wait__bar {\n    margin-top: 10px; height: 4px; border-radius: 3px;\n    background: #e9eef6 linear-gradient(90deg, rgba(44,90,160,0) 0%, rgba(44,90,160,.55) 50%, rgba(44,90,160,0) 100%);\n    background-size: 220px 100%; background-repeat: no-repeat;\n    animation: rfx-slide 1.2s linear infinite;\n}\n\n/* ---------- Bloc diagnostic ---------- */\n.rfx-diag { animation: rfx-up .45s cubic-bezier(.22,.8,.3,1) both; }\n\n.rfx-diag__banner {\n    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);\n    color: #fff; padding: 12px 16px;\n    display: flex; align-items: center; gap: 10px;\n}\n.rfx-diag__banner--repli { background: linear-gradient(135deg, #6b7789 0%, #97a1b0 100%); }\n/* Gravite severe : blocage ou panne franche, pas une simple derive */\n.rfx-diag__banner--severe { background: linear-gradient(135deg, #d7263d 0%, #f05537 100%); }\n\n/* Arret d'exploitation : informatif, jamais alarmant */\n.rfx-info {\n    display: flex; align-items: center; gap: 9px;\n    padding: 9px 16px;\n    background: #eef3fb; border-bottom: 1px solid var(--rfx-line);\n    color: var(--rfx-blue); font-size: 12px; font-weight: 600;\n    animation: rfx-in .3s ease both;\n}\n.rfx-info__pt {\n    width: 7px; height: 7px; border-radius: 50%; flex: none;\n    background: var(--rfx-blue); opacity: .7;\n}\n.rfx-diag__icon { font-size: 20px; }\n.rfx-diag__kicker { font-size: 10px; letter-spacing: .12em; opacity: .92; font-weight: 600; }\n.rfx-diag__anomalie { font-size: 14px; font-weight: 600; line-height: 1.35; }\n.rfx-diag__time { margin-left: auto; font-size: 11px; opacity: .9; white-space: nowrap; }\n\n/* Mesures SPC : faits calcules par Node-RED, independants de l'IA */\n.rfx-spc {\n    display: grid;\n    grid-template-columns: repeat(5, 1fr);   /* 5 mesures, toujours sur une ligne */\n    gap: 1px;\n    background: var(--rfx-line);\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfx-spc__item { background: var(--rfx-soft); padding: 6px 7px; min-width: 0; }\n.rfx-spc__k {\n    display: block; font-size: 8.5px; letter-spacing: .06em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 600;\n    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;\n}\n.rfx-spc__v {\n    display: block; font-size: 12.5px; font-weight: 700;\n    font-variant-numeric: tabular-nums; color: var(--rfx-text);\n    white-space: nowrap;\n}\n.rfx-spc__v small { font-size: 8.5px; font-weight: 600; color: var(--rfx-faint); margin-left: 1px; }\n.rfx-spc__v--hors { color: var(--rfx-red); }\n\n.rfx-diag__body { padding: 14px 16px; }\n.rfx-diag__label {\n    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 600; margin-bottom: 8px;\n}\n.rfx-cause {\n    display: flex; align-items: flex-start; gap: 9px;\n    padding: 8px 11px; background: var(--rfx-soft);\n    border-left: 3px solid var(--rfx-blue);\n    border-radius: 4px; margin-bottom: 6px; font-size: 13px;\n    animation: rfx-up .4s ease both;\n    transition: transform .18s ease, box-shadow .18s ease;\n}\n.rfx-cause:hover { transform: translateX(3px); box-shadow: 0 2px 10px rgba(31,45,61,.08); }\n.rfx-cause__num { color: var(--rfx-blue); font-weight: 700; }\n\n.rfx-action {\n    background: #e9f7f0; border-left: 3px solid var(--rfx-green);\n    padding: 10px 12px; border-radius: 4px;\n    color: #1a6b47; font-size: 13px; font-weight: 500;\n    animation: rfx-up .5s ease both;\n}\n.rfx-action--repli { background: #fdeef0; border-left-color: var(--rfx-red); color: #a32b32; }\n\n/* ---------- Historique des alertes ---------- */\n.rfx-histo { padding: 12px 16px; border-top: 1px solid var(--rfx-line); background: var(--rfx-soft); }\n.rfx-histo__line {\n    display: flex; align-items: center; gap: 9px;\n    padding: 5px 0; font-size: 12px; color: var(--rfx-muted);\n    border-bottom: 1px dashed var(--rfx-line);\n    animation: rfx-in .35s ease both;\n}\n.rfx-histo__line:last-child { border-bottom: none; }\n.rfx-histo__h {\n    font-variant-numeric: tabular-nums; font-weight: 700;\n    color: var(--rfx-text); background: #fff;\n    border: 1px solid var(--rfx-line); border-radius: 5px;\n    padding: 1px 6px; flex: none;\n}\n.rfx-histo__txt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n.rfx-histo__tag { margin-left: auto; font-size: 9px; letter-spacing: .1em; font-weight: 700; color: var(--rfx-faint); flex: none; }\n\n/* ---------- Journal temps reel ---------- */\n.rfx-jrn { padding: 12px 16px; border-top: 1px solid var(--rfx-line); }\n.rfx-jrn__line {\n    display: flex; align-items: baseline; gap: 9px;\n    padding: 4px 0; font-size: 12px; color: var(--rfx-muted);\n    animation: rfx-in .3s ease both;\n}\n.rfx-jrn__h {\n    font-variant-numeric: tabular-nums; font-size: 11px;\n    color: var(--rfx-faint); flex: none;\n}\n.rfx-jrn__pt {\n    width: 6px; height: 6px; border-radius: 50%; flex: none;\n    background: var(--rfx-faint); align-self: center;\n}\n.rfx-jrn__line--etat    .rfx-jrn__pt { background: var(--rfx-blue); }\n.rfx-jrn__line--ia      .rfx-jrn__pt { background: var(--rfx-blue); }\n.rfx-jrn__line--diag    .rfx-jrn__pt { background: var(--rfx-green); }\n.rfx-jrn__line--repli   .rfx-jrn__pt { background: var(--rfx-red); }\n.rfx-jrn__line--comm    .rfx-jrn__pt { background: var(--rfx-amber); }\n.rfx-jrn__line--systeme .rfx-jrn__pt { background: var(--rfx-faint); }\n.rfx-jrn__line:first-child { color: var(--rfx-text); font-weight: 500; }\n.rfx-jrn__line:first-child .rfx-jrn__pt { animation: rfx-pulse 1.6s ease-in-out infinite; }\n.rfx-jrn__txt { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }\n\n/* ---------- Etat sain ---------- */\n.rfx-clear {\n    display: flex; align-items: center; gap: 10px;\n    padding: 16px; font-size: 13px; color: var(--rfx-muted);\n    animation: rfx-in .4s ease both;\n}\n.rfx-clear__dot {\n    width: 8px; height: 8px; border-radius: 50%;\n    background: var(--rfx-green); flex: none;\n    box-shadow: 0 0 0 4px rgba(46,158,107,.15);\n    align-self: flex-start; margin-top: 4px;\n}\n.rfx-clear__dot--ko {\n    background: var(--rfx-red);\n    box-shadow: 0 0 0 4px rgba(224,75,82,.15);\n    animation: rfx-pulse 1.6s ease-in-out infinite;\n}\n\n/* Filet de securite anti-doublon : un element en cours de suppression par\n   ngAnimate est retire de la mise en page immediatement, il ne peut plus\n   cohabiter avec son remplacant. */\n.rfx .ng-leave, .rfx .ng-leave-active { display: none !important; }\n\n/* ---------- Hauteur adaptative de la carte du dashboard ----------\n   node-red-dashboard fige la hauteur d'un ui_template a la construction de\n   la page : l'auto-dimensionnement est desactive dans sa source\n   (nodes/ui_template.js, bloc commente \"performance killer\"). Un diagnostic\n   qui arrivait sur une page deja ouverte etait donc rogne en plein texte.\n   On remet la carte dans le flux normal pour qu'elle suive son contenu, et\n   le conteneur suit la carte (sinon la page ne defile plus jusqu'en bas).\n   A noter : ne concerne que les widgets ui_template. Si un groupe melange un\n   template et d'autres widgets, remettre ces regles en commentaire. */\nmd-card.nr-dashboard-template {\n    position: relative !important;\n    top: auto !important;\n    left: auto !important;\n    height: auto !important;\n}\n.nr-dashboard-cardcontainer:has(> md-card.nr-dashboard-template) { height: auto !important; }\n\n.nr-dashboard-template { overflow: visible !important; padding: 0 !important; }\n</style>\n\n    <!-- ===== En-tete : vie de la liaison + etat du module IA ===== -->\n    <div class=\"rfx-head\">\n        <!-- Rouge uniquement sur une perte AVEREE : avant le premier message\n             la communication est inconnue, pas perdue. -->\n        <span class=\"rfx-dot\" ng-class=\"{'rfx-dot--ko': msg.payload.communication === false}\"></span>\n        <h3 class=\"rfx-head__name\">{{msg.payload.machine || 'ROUFIX 01'}}</h3>\n\n        <span class=\"rfx-ia\" ng-if=\"msg.payload.ia_en_cours\">\n            <span class=\"rfx-spin\"></span> IA EN COURS\n        </span>\n        <span class=\"rfx-ia rfx-ia--ko\" ng-if=\"!msg.payload.ia_en_cours &amp;&amp; msg.payload.ia_fallback\">\n            IA INDISPONIBLE\n        </span>\n        <span class=\"rfx-ia rfx-ia--off\" ng-if=\"!msg.payload.ia_en_cours &amp;&amp; !msg.payload.ia_fallback\">\n            IA PRETE\n        </span>\n    </div>\n\n    <!-- ===== Bandeau prioritaire ===== -->\n    <!-- Se declenche sur un defaut machine OU sur une derive : la carte ne\n         peut plus annoncer \"fonctionnement nominal\" pendant un arret. -->\n    <div class=\"rfx-strip\"\n         ng-if=\"msg.payload.communication === false || msg.payload.anomalie || msg.payload.etat_classe === 'bad'\">\n        <span class=\"rfx-strip__dot\"></span>\n        <!-- Priorite : une machine injoignable prime sur tout le reste, car\n             plus aucune information affichee n'est certifiee a jour. -->\n        <span ng-if=\"msg.payload.communication === false\">LIAISON PERDUE — PLUS AUCUNE DONNÉE MACHINE</span>\n        <span ng-if=\"msg.payload.communication !== false &amp;&amp; msg.payload.etat_classe === 'bad'\">MACHINE À L'ARRÊT — {{msg.payload.etat}}</span>\n        <span ng-if=\"msg.payload.communication !== false &amp;&amp; msg.payload.etat_classe !== 'bad'\">ACTION REQUISE — DÉRIVE DÉTECTÉE SUR LE TEMPS DE CYCLE</span>\n    </div>\n\n    <!-- ===== Tuiles etat + communication ===== -->\n    <div class=\"rfx-grid\">\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">État actuel</p>\n            <!-- Element unique et permanent : seules la valeur et la couleur\n                 changent (transition CSS). Recreer le noeud a chaque changement\n                 ferait cohabiter l'ancienne et la nouvelle valeur le temps de\n                 l'animation de sortie geree par ngAnimate. -->\n            <p class=\"rfx-tile__value\"\n               ng-class=\"'rfx-state--' + (msg.payload.etat_classe || 'idle')\">{{msg.payload.etat || '--'}}</p>\n        </div>\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">Liaison</p>\n            <p class=\"rfx-tile__value\"\n               ng-class=\"msg.payload.communication === true ? 'rfx-tile__value--ok'\n                       : (msg.payload.communication === false ? 'rfx-tile__value--ko' : '')\">{{msg.payload.communication === true ? 'OK'\n                       : (msg.payload.communication === false ? 'PERTE' : 'EN ATTENTE')}}</p>\n        </div>\n        <!-- Mesure rafraichie a chaque piece : l'operateur suit le procede\n             en continu, sans attendre qu'une alerte se declenche. -->\n        <div class=\"rfx-tile\">\n            <p class=\"rfx-tile__label\">Dernier cycle</p>\n            <p class=\"rfx-tile__value\"\n               ng-class=\"msg.payload.cycle_ok === true ? 'rfx-tile__value--ok'\n                       : (msg.payload.cycle_ok === false ? 'rfx-tile__value--ko' : '')\">\n                <span ng-if=\"msg.payload.apprentissage\">Apprentissage {{msg.payload.apprentissage}}</span>\n                <span ng-if=\"!msg.payload.apprentissage &amp;&amp; msg.payload.dernier_cycle\">{{msg.payload.dernier_cycle}} ms</span>\n                <span ng-if=\"!msg.payload.apprentissage &amp;&amp; !msg.payload.dernier_cycle\">—</span>\n            </p>\n        </div>\n    </div>\n\n    <!-- ===== BLOC DIAGNOSTIC (affiche des la detection de la derive) ===== -->\n    <div class=\"rfx-diag\" ng-if=\"msg.payload.anomalie\">\n\n        <div class=\"rfx-diag__banner\"\n             ng-class=\"{'rfx-diag__banner--repli': msg.payload.ia_fallback,\n                        'rfx-diag__banner--severe': !msg.payload.ia_fallback &amp;&amp; msg.payload.diag_gravite === 'severe'}\">\n            <span class=\"rfx-diag__icon\">&#9888;</span>\n            <div>\n                <div class=\"rfx-diag__kicker\">{{msg.payload.ia_fallback ? 'MODE DEGRADE' : 'DIAGNOSTIC IA'}}<span ng-if=\"msg.payload.diag_gravite &amp;&amp; !msg.payload.ia_fallback\"> · GRAVITÉ {{msg.payload.diag_gravite}}</span></div>\n                <div class=\"rfx-diag__anomalie\">{{msg.payload.anomalie}}</div>\n            </div>\n            <div class=\"rfx-diag__time\" ng-if=\"msg.payload.diag_heure\">\n                {{msg.payload.diag_heure}}<span ng-if=\"msg.payload.diag_duree\"> · {{(msg.payload.diag_duree/1000) | number:1}} s</span>\n            </div>\n        </div>\n\n        <!-- Mesures SPC : affichees des la detection, sans attendre l'IA -->\n        <div class=\"rfx-spc\" ng-if=\"msg.payload.spc\">\n            <div class=\"rfx-spc__item\">\n                <span class=\"rfx-spc__k\">Cycle</span>\n                <span class=\"rfx-spc__v rfx-spc__v--hors\">{{msg.payload.spc.cycle}}<small>ms</small></span>\n            </div>\n            <div class=\"rfx-spc__item\">\n                <span class=\"rfx-spc__k\">Moyenne</span>\n                <span class=\"rfx-spc__v\">{{msg.payload.spc.moyenne}}<small>ms</small></span>\n            </div>\n            <div class=\"rfx-spc__item\">\n                <span class=\"rfx-spc__k\">Écart</span>\n                <span class=\"rfx-spc__v\">{{msg.payload.spc.ecart > 0 ? '+' : ''}}{{msg.payload.spc.ecart}}<small>ms</small></span>\n            </div>\n            <div class=\"rfx-spc__item\">\n                <span class=\"rfx-spc__k\">LIC</span>\n                <span class=\"rfx-spc__v\">{{msg.payload.spc.LIC}}<small>ms</small></span>\n            </div>\n            <div class=\"rfx-spc__item\">\n                <span class=\"rfx-spc__k\">LSC</span>\n                <span class=\"rfx-spc__v\">{{msg.payload.spc.LSC}}<small>ms</small></span>\n            </div>\n        </div>\n\n        <!-- Calcul IA en cours : les faits ci-dessus sont deja lisibles -->\n        <div class=\"rfx-wait\" ng-if=\"msg.payload.ia_en_cours\">\n            <div class=\"rfx-wait__row\">\n                <span class=\"rfx-spin\"></span>\n                <span>Recherche des causes probables par l'IA locale… (40&nbsp;s maximum)</span>\n            </div>\n            <div class=\"rfx-wait__bar\"></div>\n        </div>\n\n        <div class=\"rfx-diag__body\"\n             ng-if=\"msg.payload.causes_probables.length || msg.payload.action_immediate\">\n\n            <div ng-if=\"msg.payload.causes_probables.length\">\n                <div class=\"rfx-diag__label\">Causes probables</div>\n                <div class=\"rfx-cause\" ng-repeat=\"cause in msg.payload.causes_probables\"\n                     ng-style=\"{'animation-delay': ($index * 70) + 'ms'}\">\n                    <span class=\"rfx-cause__num\">{{$index + 1}}</span>\n                    <span>{{cause}}</span>\n                </div>\n            </div>\n\n            <div ng-if=\"msg.payload.action_immediate\" style=\"margin-top:14px;\">\n                <div class=\"rfx-diag__label\">Action immédiate</div>\n                <div class=\"rfx-action\" ng-class=\"{'rfx-action--repli': msg.payload.ia_fallback}\">{{msg.payload.action_immediate}}</div>\n            </div>\n\n        </div>\n    </div>\n\n    <!-- ===== Arret d'exploitation : DCY, capot, pause... pas une panne ===== -->\n    <div class=\"rfx-info\"\n         ng-if=\"msg.payload.raison_arret &amp;&amp; msg.payload.communication !== false\">\n        <span class=\"rfx-info__pt\"></span>\n        <span>{{msg.payload.raison_arret}}</span>\n    </div>\n\n    <!-- ===== Automate injoignable : explique pourquoi l'IHM se fige ===== -->\n    <!-- Sans ce message, une machine hors ligne affichait \"fonctionnement\n         nominal\" : l'operateur ne pouvait pas comprendre pourquoi plus rien\n         ne se mettait a jour, ni pourquoi l'IA ne reagissait plus. -->\n    <div class=\"rfx-clear\" ng-if=\"msg.payload.communication === false\">\n        <span class=\"rfx-clear__dot rfx-clear__dot--ko\"></span>\n        <span>Automate injoignable — aucune donnée reçue. L'état affiché n'est plus à jour\n              et le diagnostic IA est suspendu jusqu'au retour de la liaison.</span>\n    </div>\n\n    <!-- ===== Etat sain : liaison OK, ni anomalie, ni calcul, ni defaut ===== -->\n    <div class=\"rfx-clear\"\n         ng-if=\"msg.payload.communication !== false &amp;&amp; !msg.payload.anomalie &amp;&amp; !msg.payload.ia_en_cours &amp;&amp; msg.payload.etat_classe !== 'bad'\">\n        <span class=\"rfx-clear__dot\"></span>\n        <span>Aucune anomalie détectée — fonctionnement nominal</span>\n    </div>\n\n    <!-- ===== Journal temps reel : 6 derniers evenements ===== -->\n    <div class=\"rfx-jrn\" ng-if=\"msg.payload.journal.length\">\n        <div class=\"rfx-diag__label\">Journal temps réel</div>\n        <div class=\"rfx-jrn__line\" ng-class=\"'rfx-jrn__line--' + e.type\"\n             ng-repeat=\"e in msg.payload.journal track by ($index + e.h + e.texte)\">\n            <span class=\"rfx-jrn__pt\"></span>\n            <span class=\"rfx-jrn__h\">{{e.h}}</span>\n            <span class=\"rfx-jrn__txt\">{{e.texte}}</span>\n        </div>\n    </div>\n\n    <!-- ===== Historique : 3 dernieres alertes horodatees ===== -->\n    <div class=\"rfx-histo\" ng-if=\"msg.payload.historique.length\">\n        <div class=\"rfx-diag__label\">Dernières alertes</div>\n        <div class=\"rfx-histo__line\" ng-repeat=\"h in msg.payload.historique\"\n             ng-style=\"{'animation-delay': ($index * 60) + 'ms'}\">\n            <span class=\"rfx-histo__h\">{{h.heure}}</span>\n            <span class=\"rfx-histo__txt\">{{h.anomalie}}</span>\n            <span class=\"rfx-histo__tag\">{{h.repli ? 'REPLI' : 'IA'}}</span>\n        </div>\n    </div>\n\n</div>",
         "storeOutMessages": true,
         "fwdInMessages": true,
         "resendOnRefresh": true,
         "templateScope": "local",
         "className": "",
-        "x": 2710,
-        "y": 380,
+        "x": 2450,
+        "y": 560,
         "wires": [
             []
         ]
@@ -956,18 +733,19 @@
         "type": "function",
         "z": "4b8bea3d1e25ea78",
         "name": "Construire payload IHM",
-        "func": "// Nœud function à placer juste avant le ui_template.\n// Il fusionne l'état automate et la sortie du diagnostic IA en un seul objet,\n// pour que le template n'ait qu'une seule source de vérité à afficher.\n\nconst etat = flow.get(\"etat_machine\") || {};\nconst diag = flow.get(\"diagnostic_ia\") || {};\n\nconst now = new Date();\nconst hh = String(now.getHours()).padStart(2, \"0\");\nconst mm = String(now.getMinutes()).padStart(2, \"0\");\nconst ss = String(now.getSeconds()).padStart(2, \"0\");\n\nmsg.payload = {\n    machine: \"ROUFIX 01\",\n\n    // MARCHE | ATTENTE | DEFAUT | ARRET  → pilote la couleur du rail et du pill\n    etat: etat.etat || \"ATTENTE\",\n    communication: etat.communication !== false,\n    cycle: etat.cycle || \"M1\",\n    cadence: etat.cadence || null,        // null → la tuile disparaît\n    horodatage: `${hh}:${mm}:${ss}`,\n\n    // Bloc diagnostic. Si anomalie est vide ou absent,\n    // le template bascule tout seul sur l'état \"aucune anomalie\".\n    anomalie: diag.anomalie || \"\",\n    causes_probables: diag.causes_probables || [],\n    action_immediate: diag.action_immediate || \"\",\n    criticite: diag.criticite || \"haute\"  // haute | moyenne | basse\n};\n\nreturn msg;\n\n// Côté flux : stocke l'état automate avec un function node en amont\n//   flow.set(\"etat_machine\", { etat: \"ATTENTE\", communication: true, cycle: \"M1\" });\n// et la réponse de l'IA avec\n//   flow.set(\"diagnostic_ia\", JSON.parse(msg.payload));",
+        "func": "// ============================================================\n// CONSTRUIRE PAYLOAD IHM - fusion memorisee\n// Empeche l'ecrasement du diagnostic IA par les messages d'etat\n// machine (heartbeats), tient le journal temps reel, et emet\n// TOUJOURS un payload complet.\n// ============================================================\n\nconst p = msg.payload || {};\nconst MAINTENANT = Date.now();\nconst hms = new Date(MAINTENANT).toLocaleTimeString('fr-FR');\nconst heure = hms.substring(0, 5);\n\n// --- Journal temps reel : 6 derniers evenements, tous types confondus ---\nconst journal = flow.get(\"journal\") || [];\nfunction tracer(type, texte) {\n    if (journal.length && journal[0].texte === texte) { return; }   // pas de doublon\n    journal.unshift({ h: hms, type: type, texte: texte });\n    flow.set(\"journal\", journal.slice(0, 6));\n}\n\nconst histo = flow.get(\"diag_historique\") || [];\n\n// --- 0. Alerte : les FAITS arrivent avant l'IA ---\n// \"Preparer prompt IA\" emet ce message des la detection, sans attendre\n// Ollama. L'operateur voit donc immediatement la mesure en defaut et un\n// indicateur de calcul ; les causes et l'action arriveront apres.\nif (p.ia_en_cours === true) {\n    flow.set(\"ia_en_cours\", true);\n    flow.set(\"ia_debut\", MAINTENANT);\n    tracer(\"ia\", \"Analyse IA lancee (\" + (p.famille || \"derive\") + \")\");\n\n    if (p.anomalie_spc) {\n        flow.set(\"diag_anomalie\", p.anomalie_spc);\n        flow.set(\"diag_causes\", []);          // en attente du jugement IA\n        flow.set(\"diag_action\", \"\");\n        flow.set(\"diag_fallback\", false);\n        flow.set(\"diag_spc\", p.spc || null);\n        flow.set(\"diag_famille\", p.famille || null);\n        flow.set(\"diag_gravite\", p.gravite || null);\n        flow.set(\"diag_duree\", null);\n        flow.set(\"diag_timestamp\", MAINTENANT);\n        flow.set(\"diag_heure\", heure);\n\n        // Historique : l'evenement est l'alerte, pas la reponse du modele\n        histo.unshift({ heure: heure, anomalie: p.anomalie_spc, repli: false, attente: true });\n        flow.set(\"diag_historique\", histo.slice(0, 3));\n    }\n}\n\n// --- 1. Reponse de l'IA (diagnostic reel OU repli) ---\nif (p.anomalie) {\n    flow.set(\"diag_anomalie\", p.anomalie);\n    flow.set(\"diag_causes\", Array.isArray(p.causes_probables) ? p.causes_probables : []);\n    flow.set(\"diag_action\", p.action_immediate || \"\");\n    flow.set(\"diag_fallback\", p.fallback === true);\n    flow.set(\"diag_spc\", p.spc || flow.get(\"diag_spc\") || null);\n    flow.set(\"diag_duree\", p.duree_ia || null);\n    flow.set(\"diag_timestamp\", MAINTENANT);\n    flow.set(\"diag_heure\", heure);\n\n    // Le repli empruntant ce meme chemin, l'indicateur d'attente\n    // s'eteint dans tous les cas.\n    flow.set(\"ia_en_cours\", false);\n\n    const secondes = p.duree_ia ? \" en \" + (Math.round(p.duree_ia / 100) / 10) + \" s\" : \"\";\n    tracer(p.fallback === true ? \"repli\" : \"diag\",\n           (p.fallback === true ? \"Repli IA applique\" : \"Diagnostic IA recu\") + secondes);\n\n    // Complete l'entree d'historique creee par l'alerte, sinon en cree une\n    if (histo.length && histo[0].attente && histo[0].anomalie === p.anomalie) {\n        histo[0].repli = (p.fallback === true);\n        delete histo[0].attente;\n    } else {\n        histo.unshift({ heure: heure, anomalie: p.anomalie, repli: (p.fallback === true) });\n    }\n    flow.set(\"diag_historique\", histo.slice(0, 3));\n\n    // Registre long conserve pour l'onglet du responsable (50 entrees).\n    // L'IHM operateur n'affiche que l'instant present : sans ce registre,\n    // tout ce qui s'est passe pendant le poste precedent serait perdu.\n    const registre = flow.get(\"diagnostics\") || [];\n    registre.unshift({\n        ts: MAINTENANT,\n        date: new Date(MAINTENANT).toLocaleDateString('fr-FR'),\n        heure: hms,\n        ouvrier: flow.get(\"ouvrier\") || \"\",\n        famille: flow.get(\"diag_famille\") || \"spc\",\n        anomalie: p.anomalie,\n        causes: (Array.isArray(p.causes_probables) ? p.causes_probables : []).join(\" / \"),\n        action: p.action_immediate || \"\",\n        source: (p.fallback === true) ? \"repli\" : \"IA\",\n        duree_ia: p.duree_ia || null\n    });\n    flow.set(\"diagnostics\", registre.slice(0, 50));\n}\n\n\n// --- 1 bis. Mesure SPC en temps reel, a chaque piece ---\n// \"Detection derive\" emet une evaluation a chaque cycle. On garde la derniere\n// mesure pour l'afficher en continu, et surtout on SOLDE le diagnostic des\n// que le procede revient dans ses limites : sans cela le dernier diagnostic\n// restait affiche 10 min, meme avec des cycles redevenus bons.\nif (p.phase === \"APPRENTISSAGE\") {\n    flow.set(\"spc_apprentissage\", p.progression || null);\n    flow.set(\"spc_cycle\", null);\n}\nif (p.phase === \"CONTROLE\") {\n    flow.set(\"spc_apprentissage\", null);\n    flow.set(\"spc_cycle\", p.cycle);\n    flow.set(\"spc_cycle_ok\", p.alerte !== true);\n    flow.set(\"spc_limites\", { moyenne: p.moyenne, LSC: p.LSC, LIC: p.LIC });\n\n    // Cycle dans les limites : le probleme de cycle est resorbe.\n    // Un defaut machine, lui, n'est pas concerne : il se solde au redemarrage.\n    if (p.alerte !== true && flow.get(\"diag_anomalie\")) {\n        tracer(\"etat\", \"Cycle complet a \" + p.cycle + \" ms - diagnostic solde\");\n        flow.set(\"diag_anomalie\", null);\n        flow.set(\"diag_causes\", []);\n        flow.set(\"diag_action\", \"\");\n        flow.set(\"diag_spc\", null);\n        flow.set(\"diag_duree\", null);\n        flow.set(\"diag_timestamp\", 0);\n        flow.set(\"diag_famille\", null);\n    }\n}\n\n// --- 2. Garde-fou de l'indicateur d'attente ---\n// Si ni reponse ni erreur ne revient au bout de 60 s (> timeout de 40 s),\n// on eteint l'indicateur : jamais de calcul fige a l'ecran. Ce meme\n// drapeau sert de verrou anti-rafale dans \"Preparer prompt IA\".\nconst enCours = (flow.get(\"ia_en_cours\") === true)\n             && ((MAINTENANT - (flow.get(\"ia_debut\") || 0)) < 60000);\nif (!enCours) { flow.set(\"ia_en_cours\", false); }\n\n// --- 3. Etat machine, communication, statut systeme ---\n// Meme vocabulaire de defaut que le noeud \"Detection defaut machine\".\n// Meme vocabulaire que le noeud \"Detection defaut machine\". L'arret NORMAL\n// est teste en premier : \"ARRET_CAPOT\" contient \"ARRET\" sans etre une panne.\nconst ARRET_NORMAL = /DCY|DEPART_CYCLE|CAPOT|PORTE|CARTER|PROTECTEUR|PAUSE|REPOS|INIT|PRET|REARM|MANUEL|FIN_CYCLE|ATTENTE/i;\nconst estDefaut = e => {\n    const t = String(e || \"\");\n    return !ARRET_NORMAL.test(t)\n        && /SECURITE|URGENCE|THERMIQUE|SURCHAUFFE|RTH|DEFAUT|ALARME|ERREUR|BLOCAGE|BOURRAGE|ARRET/i.test(t);\n};\n\nif (p.etat) {\n    const avant = flow.get(\"machine_etat\");\n    if (avant !== p.etat) {\n        tracer(\"etat\", \"Etat machine : \" + p.etat);\n    }\n    flow.set(\"machine_etat\", p.etat);\n}\n// Presence de l'automate : identifiee par le TOPIC et non par la forme du\n// payload. Les messages SPC portent eux aussi un champ \"statut\" (\"OK\" en\n// phase d'apprentissage) : les confondre forcait la liaison a PERTE a\n// chaque cycle. Recevoir un message de ce topic vaut presence, sauf si\n// l'automate annonce explicitement son absence (message de testament LWT).\nif (typeof msg.topic === \"string\" && /systeme\\/statut/i.test(msg.topic)) {\n    const texte = String((p && p.statut) || p || \"\");\n    const enLigne = !/hors ligne|offline|deconnect|indisponible|perdu|down/i.test(texte);\n    if (flow.get(\"machine_comm\") !== enLigne) { tracer(\"systeme\", \"Automate : \" + texte); }\n    flow.set(\"machine_comm\", enLigne);\n}\n// Message du watchdog : payload est une chaine texte\nif (typeof p === \"string\") {\n    const commOk = p.indexOf(\"OK\") >= 0;\n    if (flow.get(\"machine_comm\") !== commOk) {\n        tracer(\"comm\", commOk ? \"Communication retablie\" : \"PERTE DE COMMUNICATION\");\n    }\n    flow.set(\"machine_comm\", commOk);\n}\n// Message structure avec champ communication\nif (typeof p.communication !== \"undefined\") {\n    flow.set(\"machine_comm\", p.communication);\n}\n\n// --- 4. Classe visuelle de l'etat (hierarchie du dashboard) ---\nconst etat = flow.get(\"machine_etat\") || \"--\";\nlet etatClasse = \"idle\";\n// Un arret d'exploitation (capot, DCY) porte le meme etat \"ARRET_SECURITE\"\n// qu'une panne : seule la nature relevee par le detecteur les separe.\nconst exploitation = (flow.get(\"arret_exploitation\") === true);\nif (estDefaut(etat) && !exploitation) { etatClasse = \"bad\"; }\nelse if (/MARCHE|PRODUCTION|CYCLE|ROGNAGE|FIXATION|TEMPORISATION|RETOUR/i.test(etat)) { etatClasse = \"ok\"; }\n\n// --- 5. Duree de vie du diagnostic ---\n// Une derive SPC est un evenement ponctuel : son diagnostic expire au bout\n// de 10 min. Un defaut machine, lui, dure tant que la machine est arretee :\n// son diagnostic reste affiche jusqu'au redemarrage effectif, sinon la carte\n// redeviendrait \"nominale\" avec une machine toujours en securite.\nconst DUREE_VALIDITE = 10 * 60 * 1000;\nconst familleDiag = flow.get(\"diag_famille\");\n\n// L'arret de securite est un EVENEMENT, pas un etat durable : l'ESP32\n// repasse aussitot en ATTENTE. Le diagnostic vit donc comme celui d'une\n// derive : 10 minutes, ou jusqu'au premier cycle complet.\nconst diagValide = (MAINTENANT - (flow.get(\"diag_timestamp\") || 0)) < DUREE_VALIDITE;\n\n// --- 6. On emet TOUJOURS un payload complet ---\nmsg.payload = {\n    machine: \"ROUFIX 01\",\n    etat: etat,\n    etat_classe: etatClasse,\n    communication: flow.get(\"machine_comm\"),\n\n    // Bloc IA : strictement additionnel, jamais bloquant pour ce qui precede\n    ia_en_cours: enCours,\n    ia_fallback: diagValide ? (flow.get(\"diag_fallback\") === true) : false,\n    diag_heure: diagValide ? (flow.get(\"diag_heure\") || \"\") : \"\",\n    diag_duree: diagValide ? flow.get(\"diag_duree\") : null,\n    diag_famille: diagValide ? flow.get(\"diag_famille\") : null,\n    spc: diagValide ? flow.get(\"diag_spc\") : null,\n\n    anomalie: diagValide ? flow.get(\"diag_anomalie\") : null,\n    causes_probables: diagValide ? (flow.get(\"diag_causes\") || []) : [],\n    action_immediate: diagValide ? flow.get(\"diag_action\") : \"\",\n\n    // Mesure du dernier cycle, rafraichie a chaque piece produite\n    dernier_cycle: flow.get(\"spc_cycle\"),\n    cycle_ok: flow.get(\"spc_cycle_ok\"),\n    apprentissage: flow.get(\"spc_apprentissage\"),\n    limites: flow.get(\"spc_limites\") || null,\n\n    ouvrier: flow.get(\"ouvrier\") || \"\",\n    // Arret d'exploitation (DCY non actionne, capot ouvert...) : ce n'est\n    // pas une panne, l'IHM doit le dire sans alarmer.\n    raison_arret: (etatClasse !== \"bad\") ? (flow.get(\"raison_arret\") || null) : null,\n    arret_exploitation: exploitation,\n    diag_gravite: diagValide ? flow.get(\"diag_gravite\") : null,\n    nb_rebuts: flow.get(\"nb_rebuts\") || 0,\n\n    historique: flow.get(\"diag_historique\") || [],\n    journal: flow.get(\"journal\") || []\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2650,
-        "y": 320,
+        "x": 2310,
+        "y": 460,
         "wires": [
             [
-                "444928644cfb19c6"
+                "444928644cfb19c6",
+                "8fc646400fe9ae75"
             ]
         ]
     },
@@ -979,29 +757,525 @@
         "props": [
             {
                 "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
             }
         ],
         "repeat": "",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"anomalie\":\"Derive haute - cycle trop long\",\"causes_probables\":[\"Usure du disque abrasif M1\",\"Verin pneumatique lent\"],\"action_immediate\":\"Verifier l'usure du disque abrasif\"}",
+        "topic": "test",
+        "payload": "{\"statut\":\"DERIVE HAUTE - cycle trop long\",\"cycle\":4500,\"moyenne\":3685,\"LSC\":4192,\"LIC\":3179,\"alerte\":true}",
         "payloadType": "json",
-        "x": 2400,
-        "y": 420,
+        "x": 1740,
+        "y": 100,
         "wires": [
             [
-                "444928644cfb19c6"
+                "4e3cea908607512a"
             ]
         ]
     },
     {
-        "id": "aaf643ae104a6731",
-        "type": "global-config",
-        "env": [],
-        "modules": {
-            "node-red-dashboard": "3.6.6"
-        }
+        "id": "1482dfe00655451b",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 7",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2600,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "8fc646400fe9ae75",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "debug 8",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2620,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "e2f7a41c96b03d58",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Detection defaut machine",
+        "func": "// ============================================================\n// DETECTION DEFAUT MACHINE\n// Cale sur le vocabulaire REEL de l'ESP32 ROUFIX :\n//   etats  : ATTENTE, FIXATION, TEMPORISATION, RETOUR, ARRET_SECURITE\n//   defaut : \"Aucun\", ou concatenation de Capot_Ouvert, Arret_DCY,\n//            Defaut_RTH1, Defaut_RTH2 (separes par un espace)\n//\n// POINT CLE : les quatre causes d'arret publient le MEME etat\n// \"ARRET_SECURITE\". Seul le champ \"defaut\" permet de distinguer une panne\n// (thermique) d'un arret d'exploitation (capot, DCY). C'est donc lui qui\n// decide s'il faut un diagnostic IA.\n// ============================================================\n\nconst p = msg.payload || {};\nconst etat = String(p.etat || \"\").toUpperCase();\nif (!etat) { return null; }\n\nconst code = String(p.defaut || p.code_defaut || p.erreur || \"\").toUpperCase();\nconst codePropre = (code === \"AUCUN\" || code === \"SECURITE_RETABLIE\") ? \"\" : code;\n\nconst THERMIQUE    = /RTH1|RTH2|THERMIQUE|SURCHAUFFE/;\nconst EXPLOITATION = /CAPOT|DCY|PORTE|CARTER|PROTECTEUR/;\n\nconst estIncident = /ARRET_SECURITE|ARRET_URGENCE|DEFAUT|ALARME|URGENCE|BLOCAGE|BOURRAGE/.test(etat)\n                 || THERMIQUE.test(codePropre);\n\n// Une panne prime sur une cause d'exploitation : \"Capot_Ouvert Defaut_RTH1\"\n// est un defaut thermique, pas une simple ouverture de capot.\nconst estPanne = estIncident\n              && (THERMIQUE.test(codePropre) || !EXPLOITATION.test(codePropre));\n\n// --- Front montant ---\n// Le firmware corrige repete l'etat de securite dans chaque heartbeat tant\n// que la condition persiste. Sans cette signature, on relancerait un\n// diagnostic toutes les 10 s et on marquerait a tort les pieces suivantes\n// en rebut.\nconst signature = etat + \"|\" + codePropre;\nconst precedent = flow.get(\"defaut_etat_precedent\");\nconst nouvelIncident = estIncident && (signature !== precedent);\nflow.set(\"defaut_etat_precedent\", signature);\n\n// --- Cycle interrompu ---\n// Toute coupure casse le cycle en cours. Deux firmwares sont supportes :\n//   - corrige : l'evenement ARRET_SECURITE porte la duree du cycle avorte,\n//               le rebut est comptabilise immediatement ;\n//   - ancien  : la duree vaut 0 ici, mais l'evenement ATTENTE qui suit porte\n//               une duree parasite. On arme alors le drapeau, et c'est le\n//               noeud \"Compteur pieces\" qui rebutera cette piece.\n// Les deux chemins s'excluent : aucun double comptage possible.\nif (nouvelIncident) {\n    if (p.duree_cycle > 0) {\n        flow.set(\"nb_rebuts\", (flow.get(\"nb_rebuts\") || 0) + 1);\n        flow.set(\"cycle_interrompu\", false);\n        node.warn(\"Cycle avorte apres \" + p.duree_cycle + \" ms - piece rebutee\");\n    } else {\n        flow.set(\"cycle_interrompu\", true);\n    }\n}\n\n// --- Libelle lisible de la cause ---\nconst causes = [];\nif (/CAPOT/.test(codePropre)) { causes.push(\"capot ouvert\"); }\nif (/DCY/.test(codePropre))   { causes.push(\"départ cycle (DCY) relâché\"); }\nif (/RTH1/.test(codePropre))  { causes.push(\"défaut thermique moteur M1 (disque abrasif)\"); }\nif (/RTH2/.test(codePropre))  { causes.push(\"défaut thermique moteur M2 (entraînement câble)\"); }\nconst libelle = causes.length ? causes.join(\" + \") : null;\n\n// Nature de l'arret memorisee pour l'IHM. Indispensable depuis que le\n// firmware repete \"ARRET_SECURITE\" dans ses heartbeats : l'etat seul ne\n// permet plus de distinguer un capot ouvert d'un defaut thermique, les\n// quatre causes partageant le meme libelle d'etat.\nflow.set(\"arret_exploitation\", estIncident && !estPanne);\n\n// Arret d'exploitation : information, jamais alarme, jamais de diagnostic IA\nflow.set(\"raison_arret\", (estIncident && !estPanne && libelle)\n    ? (\"Arrêt machine — \" + libelle)\n    : (etat === \"ATTENTE\" ? \"En attente du départ cycle\" : null));\n\nif (!estPanne || !nouvelIncident) {\n    node.status({ fill: estIncident ? \"blue\" : \"green\", shape: \"ring\",\n                  text: etat + (libelle ? \" (\" + libelle + \")\" : \"\") });\n    return null;\n}\n\n// Quel moteur a declenche : le diagnostic sera cible sur cet organe\nconst m1 = /RTH1/.test(codePropre), m2 = /RTH2/.test(codePropre);\nconst moteur = (m1 && m2) ? \"M1+M2\" : (m1 ? \"M1\" : (m2 ? \"M2\" : null));\n\nmsg.payload = {\n    type_alerte: \"defaut\",\n    etat: etat,\n    statut: \"DEFAUT MACHINE - \" + etat,\n    code_defaut: p.defaut || p.code_defaut || null,\n    libelle: libelle,\n    moteur: moteur,\n    nb_pieces: flow.get(\"nb_pieces\") || 0,\n    dernier_cycle: p.duree_cycle || null\n};\n\nnode.status({ fill: \"red\", shape: \"dot\", text: \"defaut : \" + (libelle || etat) });\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1080,
+        "y": 220,
+        "wires": [
+            [
+                "4e3cea908607512a"
+            ]
+        ]
+    },
+    {
+        "id": "c1b7e0a349d2f86b",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Test defaut machine",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "test",
+        "payload": "{\"type_alerte\":\"defaut\",\"etat\":\"ARRET_SECURITE\",\"statut\":\"DEFAUT MACHINE - ARRET_SECURITE\",\"code_defaut\":\"Defaut_RTH1\",\"libelle\":\"défaut thermique moteur M1 (disque abrasif)\",\"moteur\":\"M1\",\"nb_pieces\":0}",
+        "payloadType": "json",
+        "x": 1720,
+        "y": 160,
+        "wires": [
+            [
+                "4e3cea908607512a"
+            ]
+        ]
+    },
+    {
+        "id": "f8b1d3096e2a475c",
+        "type": "mqtt in",
+        "z": "4b8bea3d1e25ea78",
+        "name": "ROUFIX Statut",
+        "topic": "roufix/machine1/systeme/statut",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "b68f2e9d50a4675f",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 610,
+        "y": 200,
+        "wires": [
+            [
+                "5b7c3af83c67bcca"
+            ]
+        ]
+    },
+    {
+        "id": "a7c2e1049b6d3f85",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Prechauffer IA",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1800",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 8,
+        "topic": "prechauffage",
+        "payload": "",
+        "payloadType": "date",
+        "x": 1740,
+        "y": 1140,
+        "wires": [
+            [
+                "b4d8f3620ea17c95"
+            ]
+        ]
+    },
+    {
+        "id": "b4d8f3620ea17c95",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Prechauffer IA",
+        "func": "// ============================================================\n// PRECHAUFFER IA\n// Charge llama3.2:1b en RAM au demarrage puis toutes les 30 min.\n// Un appel a prompt vide suffit : Ollama repond done_reason \"load\"\n// sans generer de texte (~6 s mesure sur ce poste). Sans ce\n// prechauffage, ce delai s'ajoute au tout premier diagnostic reel.\n//\n// Chaine isolee : elle ne traverse ni le catch \"Erreur IA\" ni l'IHM.\n// Si Ollama est arrete, ce message echoue sans aucun effet visible.\n// ============================================================\n\nmsg.payload = {\n    model: \"llama3.2:1b\",\n    keep_alive: -1            // maintient le modele charge indefiniment\n};\nmsg.requestTimeout = 30000;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1950,
+        "y": 1140,
+        "wires": [
+            [
+                "c6a0b95d248e7f13"
+            ]
+        ]
+    },
+    {
+        "id": "c6a0b95d248e7f13",
+        "type": "http request",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Prechauffage Ollama",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://localhost:11434/api/generate",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 2180,
+        "y": 1140,
+        "wires": [
+            [
+                "d9e4c7135fa8b062"
+            ]
+        ]
+    },
+    {
+        "id": "d9e4c7135fa8b062",
+        "type": "debug",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Etat prechauffage",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload.done_reason",
+        "targetType": "msg",
+        "statusVal": "payload.done_reason",
+        "statusType": "msg",
+        "x": 2430,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "a1f4c2d3e5b60718",
+        "type": "ui_template",
+        "z": "4b8bea3d1e25ea78",
+        "group": "d2ca4264c146f130",
+        "name": "Tableau TRS",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<!--\n  ROUFIX - Tableau d'analyse TRS (onglet Analyse Management)\n  Node-RED dashboard 1.x - noeud ui_template (scope: Widget)\n\n  Largeur/hauteur du noeud = 0 (auto) : le widget epouse toujours la\n  largeur de son groupe, quelle que soit sa configuration -> aucun\n  rognage possible. La grille se reorganise seule (4, 3 ou 2 colonnes).\n\n  Les valeurs (arcs, couleurs, points des courbes) sont calculees dans\n  le noeud function \"Calcul TRS\" : ce template ne contient aucun script.\n-->\n\n<div class=\"rfxm\">\n\n<style>\n.rfxm {\n    --rfx-bg:    #ffffff;\n    --rfx-soft:  #f7f9fc;\n    --rfx-line:  #e6ebf2;\n    --rfx-text:  #1f2d3d;\n    --rfx-muted: #6b7789;\n    --rfx-faint: #97a1b0;\n    --rfx-blue:  #2c5aa0;\n    --rfx-red:   #e04b52;\n\n    font-family: 'Inter','Segoe UI',Roboto,-apple-system,sans-serif;\n    color: var(--rfx-text);\n    background: var(--rfx-bg);\n    border: 1px solid var(--rfx-line);\n    border-radius: 14px;\n    box-shadow: 0 4px 18px rgba(31,45,61,.08);\n    display: block;\n    overflow: hidden;\n    box-sizing: border-box;\n}\n.rfxm *, .rfxm *::before, .rfxm *::after { box-sizing: border-box; }\n\n@keyframes rfxm-in   { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }\n@keyframes rfxm-halo { 0%,100% { box-shadow: inset 0 0 0 0 rgba(224,75,82,0); } 50% { box-shadow: inset 0 0 0 2px rgba(224,75,82,.35); } }\n\n/* ---------- En-tete ---------- */\n.rfxm-top {\n    display: flex; flex-wrap: wrap; align-items: baseline;\n    gap: 2px 12px;\n    padding: 11px 14px;\n    background: var(--rfx-soft);\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfxm-title { font-size: 14px; font-weight: 600; }\n.rfxm-sub {\n    font-size: 11px; color: var(--rfx-faint);\n    margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap;\n}\n\n/* ---------- Grille des jauges : s'adapte a toute largeur ---------- */\n.rfxm-gauges {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));\n    gap: 1px;\n    background: var(--rfx-line);\n}\n.rfxm-card {\n    position: relative;\n    min-width: 0;\n    background: var(--rfx-bg);\n    padding: 12px 6px 14px;\n    text-align: center;\n    animation: rfxm-in .4s ease both;\n    transition: background .25s ease;\n}\n.rfxm-card:hover { background: var(--rfx-soft); }\n.rfxm-card--alert { animation: rfxm-in .4s ease both, rfxm-halo 2.4s ease-in-out infinite; }\n\n.rfxm-badge {\n    position: absolute; top: 9px; right: 9px;\n    width: 17px; height: 17px; line-height: 17px;\n    border-radius: 50%; background: var(--rfx-red); color: #fff;\n    font-size: 11px; font-weight: 700;\n}\n\n/* ---------- Jauge SVG ---------- */\n.rfxm-svg { width: 100%; max-width: 126px; height: auto; display: block; margin: 0 auto; }\n.rfxm-track { fill: none; stroke: #edf0f5; stroke-width: 11; stroke-linecap: round; }\n.rfxm-arc {\n    fill: none; stroke-width: 11;\n    transition: stroke-dasharray .9s cubic-bezier(.4,0,.2,1), stroke .45s ease;\n}\n.rfxm-val  { font-size: 31px; font-weight: 700; text-anchor: middle; }\n.rfxm-unit { font-size: 13px; fill: #97a1b0; text-anchor: middle; font-weight: 600; }\n\n.rfxm-name {\n    margin-top: 4px;\n    font-size: 10.5px; font-weight: 700; letter-spacing: .09em;\n    text-transform: uppercase; color: var(--rfx-muted);\n    line-height: 1.3;\n}\n.rfxm-spark { width: 100%; max-width: 116px; height: 24px; margin: 7px auto 0; display: block; }\n.rfxm-spark polyline { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; opacity: .8; }\n\n/* ---------- Detail au survol ---------- */\n.rfxm-tip {\n    position: absolute; left: 6px; right: 6px; bottom: 6px;\n    background: rgba(31,45,61,.96); color: #fff;\n    border-radius: 8px; padding: 7px 9px;\n    font-size: 11px; line-height: 1.5; text-align: left;\n    opacity: 0; transform: translateY(6px); pointer-events: none;\n    transition: opacity .2s ease, transform .2s ease;\n    box-shadow: 0 6px 18px rgba(31,45,61,.28);\n}\n.rfxm-card:hover .rfxm-tip { opacity: 1; transform: translateY(0); }\n.rfxm-tip__row { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }\n.rfxm-tip__k { color: #b9c3d1; }\n\n/* ---------- Bandeau KPI ---------- */\n.rfxm-kpis {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));\n    gap: 1px;\n    background: var(--rfx-line);\n    border-top: 1px solid var(--rfx-line);\n}\n.rfxm-kpi { background: var(--rfx-bg); padding: 9px 14px; min-width: 0; }\n.rfxm-kpi__label {\n    font-size: 9.5px; letter-spacing: .11em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 600; margin-bottom: 2px;\n    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;\n}\n.rfxm-kpi__value {\n    font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;\n    color: var(--rfx-blue); line-height: 1.2;\n    animation: rfxm-in .35s ease both;\n}\n.rfxm-kpi__value small { font-size: 11px; font-weight: 600; color: var(--rfx-faint); margin-left: 3px; }\n\n/* ---------- Pied de carte ---------- */\n.rfxm-foot {\n    display: flex; align-items: center; gap: 8px;\n    padding: 8px 14px;\n    border-top: 1px solid var(--rfx-line);\n    background: var(--rfx-soft);\n    font-size: 11px; color: var(--rfx-faint); line-height: 1.4;\n}\n.rfxm-foot__dot {\n    width: 6px; height: 6px; border-radius: 50%; flex: none;\n    background: #c7cfda;\n}\n.rfxm-foot--attente { color: var(--rfx-muted); }\n.rfxm-foot--attente .rfxm-foot__dot { background: var(--rfx-blue); animation: rfxm-halo 2s ease-in-out infinite; }\n\n/* Filet de securite anti-doublon : un element en cours de suppression par\n   ngAnimate est retire de la mise en page immediatement, il ne peut plus\n   cohabiter avec son remplacant. */\n.rfxm .ng-leave, .rfxm .ng-leave-active { display: none !important; }\n\n/* ---------- Hauteur adaptative de la carte du dashboard ----------\n   Meme correctif que la fiche operateur : node-red-dashboard fige la hauteur\n   d'un ui_template a la construction de la page (auto-dimensionnement\n   desactive dans sa source). La carte revient dans le flux normal et suit\n   son contenu, quel que soit le nombre de colonnes de jauges. */\nmd-card.nr-dashboard-template {\n    position: relative !important;\n    top: auto !important;\n    left: auto !important;\n    height: auto !important;\n}\n.nr-dashboard-cardcontainer:has(> md-card.nr-dashboard-template) { height: auto !important; }\n\n.nr-dashboard-template { overflow: visible !important; padding: 0 !important; }\n</style>\n\n    <div class=\"rfxm-top\">\n        <span class=\"rfxm-title\">Performance de production — ROUFIX 01</span>\n        <span class=\"rfxm-sub\">Poste : {{msg.payload.temps_poste_min}} min · MAJ {{msg.payload.maj}}</span>\n    </div>\n\n    <!-- ===== Jauges SVG : arc anime + mini-historique ===== -->\n    <div class=\"rfxm-gauges\">\n        <!-- \"track by g.cle\" : les 4 cartes sont creees une seule fois puis\n             mises a jour sur place. Sans cela, chaque rafraichissement (10 s)\n             detruisait et recreait les cartes ; ngAnimate laissant l'ancien\n             jeu a l'ecran pendant son animation de sortie, les jauges\n             apparaissaient en double pendant une seconde. -->\n        <div class=\"rfxm-card\"\n             ng-repeat=\"g in msg.payload.jauges track by g.cle\"\n             ng-class=\"{'rfxm-card--alert': g.critique}\"\n             ng-style=\"{'animation-delay': ($index * 70) + 'ms'}\">\n\n            <span class=\"rfxm-badge\" ng-if=\"g.critique\">!</span>\n\n            <svg class=\"rfxm-svg\" viewBox=\"0 0 140 118\">\n                <circle class=\"rfxm-track\" cx=\"70\" cy=\"70\" r=\"54\"\n                        ng-attr-stroke-dasharray=\"{{msg.payload.arc_track}}\"\n                        transform=\"rotate(150 70 70)\"></circle>\n                <circle class=\"rfxm-arc\" cx=\"70\" cy=\"70\" r=\"54\"\n                        ng-attr-stroke=\"{{g.couleur}}\"\n                        ng-attr-stroke-dasharray=\"{{g.dash}}\"\n                        ng-attr-stroke-linecap=\"{{g.linecap}}\"\n                        transform=\"rotate(150 70 70)\"></circle>\n                <text class=\"rfxm-val\" x=\"70\" y=\"72\" ng-attr-fill=\"{{g.couleur}}\">{{g.valeur}}</text>\n                <text class=\"rfxm-unit\" x=\"70\" y=\"92\">%</text>\n            </svg>\n\n            <div class=\"rfxm-name\">{{g.titre}}</div>\n\n            <svg class=\"rfxm-spark\" viewBox=\"0 0 116 24\" preserveAspectRatio=\"none\">\n                <polyline ng-attr-points=\"{{g.points}}\" ng-attr-stroke=\"{{g.couleur}}\"></polyline>\n            </svg>\n\n            <!-- Details affiches au survol de la carte -->\n            <div class=\"rfxm-tip\">\n                <div class=\"rfxm-tip__row\"><span class=\"rfxm-tip__k\">Minimum</span><span>{{g.mini}} %</span></div>\n                <div class=\"rfxm-tip__row\"><span class=\"rfxm-tip__k\">Moyenne</span><span>{{g.moy}} %</span></div>\n                <div class=\"rfxm-tip__row\"><span class=\"rfxm-tip__k\">Maximum</span><span>{{g.maxi}} %</span></div>\n                <div class=\"rfxm-tip__row\"><span class=\"rfxm-tip__k\">Échelle</span><span>0 – {{g.max}} %</span></div>\n                <div class=\"rfxm-tip__row\"><span class=\"rfxm-tip__k\">Relevés</span><span>{{g.n}}</span></div>\n            </div>\n        </div>\n    </div>\n\n    <!-- ===== KPI de production ===== -->\n    <div class=\"rfxm-kpis\">\n        <div class=\"rfxm-kpi\">\n            <div class=\"rfxm-kpi__label\">Pièces produites</div>\n            <div class=\"rfxm-kpi__value\">{{msg.payload.nb_pieces}}</div>\n        </div>\n        <div class=\"rfxm-kpi\">\n            <div class=\"rfxm-kpi__label\">Rebuts</div>\n            <div class=\"rfxm-kpi__value\" ng-style=\"{color: msg.payload.nb_rebuts ? '#e04b52' : '#97a1b0'}\">{{msg.payload.nb_rebuts}}</div>\n        </div>\n        <div class=\"rfxm-kpi\">\n            <div class=\"rfxm-kpi__label\">Cycle moyen</div>\n            <div class=\"rfxm-kpi__value\">{{msg.payload.cycle_moyen}}<small>ms</small></div>\n        </div>\n        <div class=\"rfxm-kpi\">\n            <div class=\"rfxm-kpi__label\">Cycle théorique</div>\n            <div class=\"rfxm-kpi__value\">{{msg.payload.cycle_theorique}}<small>ms</small></div>\n        </div>\n        <div class=\"rfxm-kpi\">\n            <div class=\"rfxm-kpi__label\">Durée du poste</div>\n            <div class=\"rfxm-kpi__value\">{{msg.payload.temps_poste_min}}<small>min</small></div>\n        </div>\n    </div>\n\n    <!-- ===== Pied : etat d'attente ou note methodologique ===== -->\n    <div class=\"rfxm-foot rfxm-foot--attente\" ng-if=\"msg.payload.demarrage\">\n        <span class=\"rfxm-foot__dot\"></span>\n        <span>En attente de production — les indicateurs se calculent dès la première pièce.</span>\n    </div>\n    <div class=\"rfxm-foot\" ng-if=\"!msg.payload.demarrage\">\n        <span class=\"rfxm-foot__dot\"></span>\n        <span>Qualité mesurée : une pièce dont le cycle a été interrompu (défaut, capot ouvert)\n              est comptée en rebut et exclue de la carte de contrôle.</span>\n    </div>\n\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1580,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a8e5fc476d3b9012",
+        "type": "ui_text_input",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Ouvrier",
+        "label": "Ouvrier au poste",
+        "tooltip": "Saisir le nom puis valider : le poste precedent est archive",
+        "group": "f7d4eb365c2a8901",
+        "order": 1,
+        "width": 8,
+        "height": 1,
+        "passthru": false,
+        "mode": "text",
+        "delay": "0",
+        "topic": "ouvrier",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "str",
+        "x": 620,
+        "y": 1000,
+        "wires": [
+            [
+                "ca07be698f5d1234"
+            ]
+        ]
+    },
+    {
+        "id": "b9f6ad587e4c0123",
+        "type": "ui_button",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Cloturer le poste",
+        "group": "f7d4eb365c2a8901",
+        "order": 2,
+        "width": 4,
+        "height": 1,
+        "passthru": false,
+        "label": "Clôturer le poste",
+        "tooltip": "Archive le poste et remet les compteurs a zero",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "cloture manuelle",
+        "payloadType": "str",
+        "topic": "cloture",
+        "topicType": "str",
+        "x": 640,
+        "y": 1060,
+        "wires": [
+            [
+                "e8671ad50e8bf5bd"
+            ]
+        ]
+    },
+    {
+        "id": "ca07be698f5d1234",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Changement d'ouvrier",
+        "func": "// ============================================================\n// CHANGEMENT D'OUVRIER\n// Saisi depuis le dashboard. Un poste appartient a un ouvrier : quand la\n// releve arrive, on CLOTURE d'abord le poste en cours (archivage CSV +\n// remise a zero des compteurs), puis on repart a zero pour le suivant.\n// Sans cela, la production des deux ouvriers serait melangee et l'IHM,\n// qui n'affiche que l'instant present, effacerait le travail du precedent.\n// ============================================================\n\nconst nouveau = String(msg.payload || \"\").trim();\nif (!nouveau) { return null; }\n\nconst ancien = flow.get(\"ouvrier\") || \"\";\nif (nouveau === ancien) { return null; }\n\nconst pieces = flow.get(\"nb_pieces\") || 0;\n\n// Poste vide (aucune piece produite) : rien a archiver, on nomme simplement\n// l'ouvrier et on demarre son poste.\nif (pieces === 0) {\n    flow.set(\"ouvrier\", nouveau);\n    flow.set(\"debut_poste\", Date.now());\n    node.status({ fill: \"green\", shape: \"dot\", text: \"poste : \" + nouveau });\n    return null;\n}\n\n// Sinon on cloture le poste de l'ancien avant de basculer.\nnode.status({ fill: \"blue\", shape: \"dot\", text: \"releve : \" + ancien + \" -> \" + nouveau });\nmsg.nouvel_ouvrier = nouveau;\nmsg.motif = \"releve d'equipe\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 860,
+        "y": 1000,
+        "wires": [
+            [
+                "e8671ad50e8bf5bd"
+            ]
+        ]
+    },
+    {
+        "id": "db18cf70906e2345",
+        "type": "file in",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Lire classeur",
+        "filename": "filename",
+        "filenameType": "msg",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 1120,
+        "y": 900,
+        "wires": [
+            [
+                "0e4bf2a3c3915678"
+            ]
+        ]
+    },
+    {
+        "id": "ec29d081a17f3456",
+        "type": "catch",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Classeur absent",
+        "scope": [
+            "db18cf70906e2345"
+        ],
+        "uncaught": false,
+        "x": 1120,
+        "y": 830,
+        "wires": [
+            [
+                "fd3ae192b2804567"
+            ]
+        ]
+    },
+    {
+        "id": "fd3ae192b2804567",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Classeur absent",
+        "func": "// Le classeur n'existe pas encore : le noeud \"file in\" leve une erreur,\n// captee ici. On repart d'un contenu vide, SheetJS creera le fichier.\nmsg.payload = null;\nnode.status({ fill: \"grey\", shape: \"ring\", text: \"classeur cree\" });\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1350,
+        "y": 830,
+        "wires": [
+            [
+                "0e4bf2a3c3915678"
+            ]
+        ]
+    },
+    {
+        "id": "0e4bf2a3c3915678",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Fusionner classeur",
+        "func": "// ============================================================\n// FUSIONNER CLASSEUR  --  ecriture d'un vrai fichier Excel\n// Un seul classeur roufix_suivi.xlsx contient deux feuilles :\n//   \"Postes\"      : une ligne par poste, avec l'ouvrier\n//   \"Diagnostics\" : une ligne par diagnostic IA\n// Le classeur existant est relu, la ligne ajoutee, puis le tout reecrit :\n// les donnees s'accumulent sans jamais dupliquer l'en-tete.\n// La bibliotheque SheetJS est declaree dans l'onglet \"Configuration\" du\n// noeud (module \"xlsx\") : Node-RED l'installe automatiquement.\n// ============================================================\n\nconst feuille = msg.feuille;\nconst entete = msg.entete;      // tableau des noms de colonnes\nconst ligne = msg.ligne;        // tableau des valeurs\nif (!feuille || !Array.isArray(entete) || !Array.isArray(ligne)) { return null; }\n\n// Classeur existant, ou classeur neuf si le fichier n'existe pas encore\nlet classeur;\nif (msg.payload && msg.payload.length) {\n    try {\n        // cellStyles: true est indispensable — sans lui, la relecture\n        // supprime les largeurs de colonnes des AUTRES feuilles, qui\n        // seraient alors reecrites sans mise en forme.\n        classeur = XLSX.read(msg.payload, { type: \"buffer\", cellStyles: true });\n    } catch (e) {\n        node.warn(\"Classeur illisible, il est recree : \" + e.message);\n        classeur = XLSX.utils.book_new();\n    }\n} else {\n    classeur = XLSX.utils.book_new();\n}\n\n// Contenu actuel de la feuille, en tableau de tableaux\nconst existante = classeur.Sheets[feuille];\nlet lignes = existante ? XLSX.utils.sheet_to_json(existante, { header: 1 }) : [];\nlignes = lignes.filter(l => l && l.length);\n\nif (!lignes.length) { lignes.push(entete); }\nlignes.push(ligne);\n\nconst nouvelle = XLSX.utils.aoa_to_sheet(lignes);\n\n// Largeurs de colonnes et filtres : le tableau est lisible et triable\n// des l'ouverture, sans manipulation.\nnouvelle[\"!cols\"] = msg.largeurs || entete.map(t => ({ wch: Math.max(10, String(t).length + 2) }));\nnouvelle[\"!autofilter\"] = { ref: XLSX.utils.encode_range({\n    s: { r: 0, c: 0 },\n    e: { r: lignes.length - 1, c: entete.length - 1 }\n}) };\n\nif (classeur.SheetNames.indexOf(feuille) === -1) {\n    XLSX.utils.book_append_sheet(classeur, nouvelle, feuille);\n} else {\n    classeur.Sheets[feuille] = nouvelle;\n}\n\nmsg.payload = XLSX.write(classeur, { type: \"buffer\", bookType: \"xlsx\" });\nnode.status({ fill: \"green\", shape: \"dot\", text: feuille + \" : \" + (lignes.length - 1) + \" ligne(s)\" });\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "XLSX",
+                "module": "xlsx"
+            }
+        ],
+        "x": 1570,
+        "y": 900,
+        "wires": [
+            [
+                "1f5c03b4d4a26789"
+            ]
+        ]
+    },
+    {
+        "id": "1f5c03b4d4a26789",
+        "type": "file",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Ecrire classeur",
+        "filename": "filename",
+        "filenameType": "msg",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "true",
+        "encoding": "none",
+        "x": 1790,
+        "y": 900,
+        "wires": [
+            [
+                "a268ea1017fc75b4"
+            ]
+        ]
+    },
+    {
+        "id": "206d14c5e5b3789a",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Archiver diagnostic",
+        "func": "// ============================================================\n// ARCHIVER DIAGNOSTIC\n// Chaque diagnostic (reel ou repli) est consigne dans la feuille\n// \"Diagnostics\" du classeur roufix_suivi.xlsx. L'IHM operateur n'affiche\n// que l'instant present : ce classeur est la memoire longue du responsable.\n// ============================================================\n\nconst CHEMIN = \"C:/Users/GM Louay/OneDrive/Documents/roufix_suivi.xlsx\";\nconst p = msg.payload || {};\nif (!p.anomalie) { return null; }\n\nconst d = new Date();\nconst causes = Array.isArray(p.causes_probables) ? p.causes_probables.join(\" / \") : \"\";\nconst spc = msg.spc || {};\n\nmsg.filename = CHEMIN;\nmsg.feuille = \"Diagnostics\";\nmsg.entete = [\"Date\", \"Heure\", \"Ouvrier\", \"Nature\", \"Anomalie constatee\",\n              \"Causes probables\", \"Action immediate\", \"Source\",\n              \"Duree analyse (s)\", \"Cycle mesure (ms)\", \"Moyenne (ms)\",\n              \"LIC (ms)\", \"LSC (ms)\"];\nmsg.ligne = [\n    d.toLocaleDateString('fr-FR'),\n    d.toLocaleTimeString('fr-FR'),\n    flow.get(\"ouvrier\") || \"Non renseigne\",\n    msg.famille || \"derive\",\n    p.anomalie,\n    causes,\n    p.action_immediate || \"\",\n    (p.fallback === true) ? \"repli\" : \"IA\",\n    p.duree_ia ? Math.round(p.duree_ia / 100) / 10 : \"\",\n    (spc.cycle != null) ? spc.cycle : \"\",\n    (spc.moyenne != null) ? spc.moyenne : \"\",\n    (spc.LIC != null) ? spc.LIC : \"\",\n    (spc.LSC != null) ? spc.LSC : \"\"\n];\nmsg.largeurs = [11, 10, 18, 10, 52, 46, 46, 9, 15, 16, 13, 11, 11].map(w => ({ wch: w }));\n\n// Ce chemin ne doit surtout pas remettre les compteurs de poste a zero\nmsg.raz = false;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2760,
+        "y": 200,
+        "wires": [
+            [
+                "db18cf70906e2345"
+            ]
+        ]
+    },
+    {
+        "id": "b3f0a921d6e845c7",
+        "type": "ui_template",
+        "z": "4b8bea3d1e25ea78",
+        "group": "f1c6d40982a7b3e5",
+        "name": "Tableau postes",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<!--\n  ROUFIX - Suivi des postes (onglet Responsable)\n  Node-RED dashboard 1.x - noeud ui_template (scope: Widget)\n  Alimente par le noeud \"Preparer historique\". Aucun script.\n-->\n\n<div class=\"rfxp\">\n\n<style>\n.rfxp {\n    --rfx-bg:    #ffffff;\n    --rfx-soft:  #f7f9fc;\n    --rfx-line:  #e6ebf2;\n    --rfx-text:  #1f2d3d;\n    --rfx-muted: #6b7789;\n    --rfx-faint: #97a1b0;\n    --rfx-blue:  #2c5aa0;\n    --rfx-green: #2e9e6b;\n    --rfx-amber: #e8952a;\n    --rfx-red:   #e04b52;\n\n    font-family: 'Inter','Segoe UI',Roboto,-apple-system,sans-serif;\n    color: var(--rfx-text);\n    background: var(--rfx-bg);\n    border: 1px solid var(--rfx-line);\n    border-radius: 14px;\n    box-shadow: 0 4px 18px rgba(31,45,61,.08);\n    display: block;\n    overflow: hidden;\n    box-sizing: border-box;\n}\n.rfxp *, .rfxp *::before, .rfxp *::after { box-sizing: border-box; }\n\n@keyframes rfxp-in { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }\n@keyframes rfxp-pulse { 50% { opacity:.3; } }\n\n.rfxp-top {\n    display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px;\n    padding: 11px 14px;\n    background: var(--rfx-soft);\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfxp-title { font-size: 14px; font-weight: 600; }\n.rfxp-sub { font-size: 11px; color: var(--rfx-faint); margin-left: auto; font-variant-numeric: tabular-nums; }\n\n/* Poste en cours */\n.rfxp-encours {\n    display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px;\n    padding: 10px 14px;\n    background: #eef3fb;\n    border-bottom: 1px solid var(--rfx-line);\n    font-size: 12px;\n}\n.rfxp-encours__pt {\n    width: 7px; height: 7px; border-radius: 50%; background: var(--rfx-blue);\n    flex: none; animation: rfxp-pulse 1.8s ease-in-out infinite;\n}\n.rfxp-encours b { font-size: 13px; }\n\n.rfxp-section {\n    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 600;\n    padding: 11px 14px 7px;\n}\n\n/* Tableaux */\n.rfxp-scroll { max-height: 240px; overflow-y: auto; overflow-x: auto; border-top: 1px solid var(--rfx-line); }\ntable.rfxp-tab { width: 100%; border-collapse: collapse; font-size: 12px; }\n.rfxp-tab thead th {\n    position: sticky; top: 0; z-index: 1;\n    background: var(--rfx-soft);\n    text-align: left; font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 700;\n    padding: 8px 10px; white-space: nowrap;\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfxp-tab td {\n    padding: 8px 10px; border-bottom: 1px solid var(--rfx-line);\n    font-variant-numeric: tabular-nums; white-space: nowrap;\n}\n.rfxp-tab tbody tr { animation: rfxp-in .3s ease both; transition: background .15s ease; }\n.rfxp-tab tbody tr:hover { background: var(--rfx-soft); }\n.rfxp-tab tbody tr:last-child td { border-bottom: none; }\n.rfxp-nom { font-weight: 600; }\n.rfxp-num { text-align: right; }\n.rfxp-fort { font-weight: 700; }\n.rfxp-ok   { color: var(--rfx-green); font-weight: 700; }\n.rfxp-moy  { color: var(--rfx-amber); font-weight: 700; }\n.rfxp-bas  { color: var(--rfx-red);   font-weight: 700; }\n.rfxp-inc  { color: var(--rfx-red); font-weight: 700; }\n.rfxp-zero { color: var(--rfx-faint); }\n\n.rfxp-vide {\n    display: flex; align-items: center; gap: 9px;\n    padding: 16px 14px; font-size: 12px; color: var(--rfx-muted);\n}\n.rfxp-vide__pt { width: 7px; height: 7px; border-radius: 50%; background: var(--rfx-faint); flex: none; }\n\n/* Hauteur adaptative : voir la fiche operateur pour l'explication */\nmd-card.nr-dashboard-template {\n    position: relative !important;\n    top: auto !important;\n    left: auto !important;\n    height: auto !important;\n}\n.nr-dashboard-cardcontainer:has(> md-card.nr-dashboard-template) { height: auto !important; }\n.nr-dashboard-template { overflow: visible !important; padding: 0 !important; }\n</style>\n\n    <div class=\"rfxp-top\">\n        <span class=\"rfxp-title\">Suivi des postes — ROUFIX 01</span>\n        <span class=\"rfxp-sub\">{{msg.payload.total_postes}} poste(s) archivé(s) · MAJ {{msg.payload.maj}}</span>\n    </div>\n\n    <div class=\"rfxp-encours\">\n        <span class=\"rfxp-encours__pt\"></span>\n        <span>Poste en cours : <b>{{msg.payload.poste_en_cours.ouvrier}}</b></span>\n        <span><b>{{msg.payload.poste_en_cours.pieces}}</b> pièce(s)</span>\n        <span>depuis <b>{{msg.payload.poste_en_cours.depuis_min}}</b> min</span>\n    </div>\n\n    <!-- ===== Synthese par ouvrier ===== -->\n    <div class=\"rfxp-section\">Synthèse par ouvrier</div>\n    <div class=\"rfxp-vide\" ng-if=\"!msg.payload.synthese.length\">\n        <span class=\"rfxp-vide__pt\"></span>\n        <span>Aucun poste clôturé pour l'instant — la synthèse apparaîtra à la première clôture.</span>\n    </div>\n    <div class=\"rfxp-scroll\" ng-if=\"msg.payload.synthese.length\">\n        <table class=\"rfxp-tab\">\n            <thead>\n                <tr>\n                    <th>Ouvrier</th><th class=\"rfxp-num\">Postes</th><th class=\"rfxp-num\">Pièces</th>\n                    <th class=\"rfxp-num\">Heures</th><th class=\"rfxp-num\">Cadence /h</th>\n                    <th class=\"rfxp-num\">TRS moyen</th><th class=\"rfxp-num\">Incidents</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr ng-repeat=\"o in msg.payload.synthese track by o.ouvrier\">\n                    <td class=\"rfxp-nom\">{{o.ouvrier}}</td>\n                    <td class=\"rfxp-num\">{{o.postes}}</td>\n                    <td class=\"rfxp-num rfxp-fort\">{{o.pieces}}</td>\n                    <td class=\"rfxp-num\">{{o.heures}}</td>\n                    <td class=\"rfxp-num\">{{o.cadence}}</td>\n                    <td class=\"rfxp-num\" ng-class=\"o.trs_moyen >= 75 ? 'rfxp-ok' : (o.trs_moyen >= 60 ? 'rfxp-moy' : 'rfxp-bas')\">{{o.trs_moyen}} %</td>\n                    <td class=\"rfxp-num\" ng-class=\"o.incidents ? 'rfxp-inc' : 'rfxp-zero'\">{{o.incidents}}</td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n\n    <!-- ===== Detail des postes ===== -->\n    <div class=\"rfxp-section\">Détail des postes clôturés</div>\n    <div class=\"rfxp-vide\" ng-if=\"!msg.payload.postes.length\">\n        <span class=\"rfxp-vide__pt\"></span>\n        <span>Aucun poste enregistré. Chaque clôture ajoute une ligne ici et dans le classeur roufix_suivi.xlsx (feuille « Postes »).</span>\n    </div>\n    <div class=\"rfxp-scroll\" ng-if=\"msg.payload.postes.length\">\n        <table class=\"rfxp-tab\">\n            <thead>\n                <tr>\n                    <th>Date</th><th>Début</th><th>Fin</th><th>Ouvrier</th>\n                    <th class=\"rfxp-num\">Durée</th><th class=\"rfxp-num\">Pièces</th>\n                    <th class=\"rfxp-num\">Cycle moyen</th><th class=\"rfxp-num\">Dispo</th>\n                    <th class=\"rfxp-num\">Perf</th><th class=\"rfxp-num\">TRS</th>\n                    <th class=\"rfxp-num\">Incidents</th><th>Clôture</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr ng-repeat=\"p in msg.payload.postes track by ($index + p.date + p.debut)\">\n                    <td>{{p.date}}</td>\n                    <td>{{p.debut}}</td>\n                    <td>{{p.fin}}</td>\n                    <td class=\"rfxp-nom\">{{p.ouvrier}}</td>\n                    <td class=\"rfxp-num\">{{p.duree_min}} min</td>\n                    <td class=\"rfxp-num rfxp-fort\">{{p.pieces}}</td>\n                    <td class=\"rfxp-num\">{{p.cycle_moyen}} ms</td>\n                    <td class=\"rfxp-num\">{{p.disponibilite}} %</td>\n                    <td class=\"rfxp-num\">{{p.performance}} %</td>\n                    <td class=\"rfxp-num\" ng-class=\"p.trs >= 75 ? 'rfxp-ok' : (p.trs >= 60 ? 'rfxp-moy' : 'rfxp-bas')\">{{p.trs}} %</td>\n                    <td class=\"rfxp-num\" ng-class=\"p.incidents ? 'rfxp-inc' : 'rfxp-zero'\">{{p.incidents}}</td>\n                    <td>{{p.motif}}</td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1360,
+        "y": 1120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c4a1b8032f9e567d",
+        "type": "ui_template",
+        "z": "4b8bea3d1e25ea78",
+        "group": "a2e5f8137b0c496d",
+        "name": "Registre diagnostics",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "format": "<!--\n  ROUFIX - Registre des diagnostics IA (onglet Responsable)\n  Node-RED dashboard 1.x - noeud ui_template (scope: Widget)\n  Alimente par le noeud \"Preparer historique\". Aucun script.\n-->\n\n<div class=\"rfxd\">\n\n<style>\n.rfxd {\n    --rfx-bg:    #ffffff;\n    --rfx-soft:  #f7f9fc;\n    --rfx-line:  #e6ebf2;\n    --rfx-text:  #1f2d3d;\n    --rfx-muted: #6b7789;\n    --rfx-faint: #97a1b0;\n    --rfx-blue:  #2c5aa0;\n    --rfx-green: #2e9e6b;\n    --rfx-red:   #e04b52;\n\n    font-family: 'Inter','Segoe UI',Roboto,-apple-system,sans-serif;\n    color: var(--rfx-text);\n    background: var(--rfx-bg);\n    border: 1px solid var(--rfx-line);\n    border-radius: 14px;\n    box-shadow: 0 4px 18px rgba(31,45,61,.08);\n    display: block;\n    overflow: hidden;\n    box-sizing: border-box;\n}\n.rfxd *, .rfxd *::before, .rfxd *::after { box-sizing: border-box; }\n\n@keyframes rfxd-in { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }\n\n.rfxd-top {\n    display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px;\n    padding: 11px 14px;\n    background: var(--rfx-soft);\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfxd-title { font-size: 14px; font-weight: 600; }\n.rfxd-sub { font-size: 11px; color: var(--rfx-faint); margin-left: auto; font-variant-numeric: tabular-nums; }\n\n.rfxd-scroll { max-height: 340px; overflow-y: auto; overflow-x: auto; }\ntable.rfxd-tab { width: 100%; border-collapse: collapse; font-size: 12px; }\n.rfxd-tab thead th {\n    position: sticky; top: 0; z-index: 1;\n    background: var(--rfx-soft);\n    text-align: left; font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase;\n    color: var(--rfx-faint); font-weight: 700;\n    padding: 8px 10px; white-space: nowrap;\n    border-bottom: 1px solid var(--rfx-line);\n}\n.rfxd-tab td { padding: 8px 10px; border-bottom: 1px solid var(--rfx-line); vertical-align: top; }\n.rfxd-tab tbody tr { animation: rfxd-in .3s ease both; transition: background .15s ease; }\n.rfxd-tab tbody tr:hover { background: var(--rfx-soft); }\n.rfxd-tab tbody tr:last-child td { border-bottom: none; }\n.rfxd-h { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--rfx-muted); }\n.rfxd-nom { font-weight: 600; white-space: nowrap; }\n.rfxd-anom { font-weight: 600; min-width: 220px; }\n.rfxd-causes { color: var(--rfx-muted); min-width: 200px; }\n.rfxd-action { color: #1a6b47; min-width: 200px; }\n\n.rfxd-tag {\n    display: inline-block; font-size: 9px; font-weight: 700; letter-spacing: .08em;\n    padding: 2px 7px; border-radius: 999px; white-space: nowrap;\n}\n.rfxd-tag--ia    { background: #e9f7f0; color: var(--rfx-green); }\n.rfxd-tag--repli { background: #fdeef0; color: var(--rfx-red); }\n.rfxd-tag--nat   { background: #eef3fb; color: var(--rfx-blue); }\n\n.rfxd-vide {\n    display: flex; align-items: center; gap: 9px;\n    padding: 18px 14px; font-size: 12px; color: var(--rfx-muted);\n}\n.rfxd-vide__pt { width: 7px; height: 7px; border-radius: 50%; background: var(--rfx-green); flex: none; }\n\n/* Hauteur adaptative : voir la fiche operateur pour l'explication */\nmd-card.nr-dashboard-template {\n    position: relative !important;\n    top: auto !important;\n    left: auto !important;\n    height: auto !important;\n}\n.nr-dashboard-cardcontainer:has(> md-card.nr-dashboard-template) { height: auto !important; }\n.nr-dashboard-template { overflow: visible !important; padding: 0 !important; }\n</style>\n\n    <div class=\"rfxd-top\">\n        <span class=\"rfxd-title\">Registre des diagnostics IA</span>\n        <span class=\"rfxd-sub\">{{msg.payload.total_diagnostics}} enregistré(s) · MAJ {{msg.payload.maj}}</span>\n    </div>\n\n    <div class=\"rfxd-vide\" ng-if=\"!msg.payload.diagnostics.length\">\n        <span class=\"rfxd-vide__pt\"></span>\n        <span>Aucun incident depuis le démarrage — le registre se remplit à chaque diagnostic et alimente la feuille « Diagnostics » du classeur.</span>\n    </div>\n\n    <div class=\"rfxd-scroll\" ng-if=\"msg.payload.diagnostics.length\">\n        <table class=\"rfxd-tab\">\n            <thead>\n                <tr>\n                    <th>Date</th><th>Heure</th><th>Ouvrier</th><th>Nature</th>\n                    <th>Anomalie constatée</th><th>Causes probables</th>\n                    <th>Action immédiate</th><th>Source</th><th>Analyse</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr ng-repeat=\"d in msg.payload.diagnostics track by ($index + d.heure)\">\n                    <td class=\"rfxd-h\">{{d.date}}</td>\n                    <td class=\"rfxd-h\">{{d.heure}}</td>\n                    <td class=\"rfxd-nom\">{{d.ouvrier || '—'}}</td>\n                    <td><span class=\"rfxd-tag rfxd-tag--nat\">{{d.famille}}</span></td>\n                    <td class=\"rfxd-anom\">{{d.anomalie}}</td>\n                    <td class=\"rfxd-causes\">{{d.causes || '—'}}</td>\n                    <td class=\"rfxd-action\">{{d.action || '—'}}</td>\n                    <td><span class=\"rfxd-tag\" ng-class=\"d.source === 'repli' ? 'rfxd-tag--repli' : 'rfxd-tag--ia'\">{{d.source}}</span></td>\n                    <td class=\"rfxd-h\">{{d.duree_ia ? (d.duree_ia/1000 | number:1) + ' s' : '—'}}</td>\n                </tr>\n            </tbody>\n        </table>\n    </div>\n\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1380,
+        "y": 1180,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d5b2c9143a0f678e",
+        "type": "inject",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Refresh historique",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 3,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 900,
+        "y": 1150,
+        "wires": [
+            [
+                "e6c3da254b1f7890"
+            ]
+        ]
+    },
+    {
+        "id": "e6c3da254b1f7890",
+        "type": "function",
+        "z": "4b8bea3d1e25ea78",
+        "name": "Preparer historique",
+        "func": "// ============================================================\n// PREPARER HISTORIQUE  --  alimente l'onglet du responsable\n// Rassemble les postes archives et les diagnostics conserves en memoire,\n// et les met en forme pour les deux tableaux du dashboard.\n// ============================================================\n\nconst postes = flow.get(\"postes\") || [];\nconst diagnostics = flow.get(\"diagnostics\") || [];\n\n// Synthese par ouvrier : de quoi comparer les equipes d'un coup d'oeil\nconst parOuvrier = {};\npostes.forEach(function (p) {\n    const cle = p.ouvrier || \"Non renseigne\";\n    if (!parOuvrier[cle]) {\n        parOuvrier[cle] = { ouvrier: cle, postes: 0, pieces: 0, minutes: 0, trs: 0, incidents: 0 };\n    }\n    const o = parOuvrier[cle];\n    o.postes += 1;\n    o.pieces += p.pieces || 0;\n    o.minutes += p.duree_min || 0;\n    o.trs += p.trs || 0;\n    o.incidents += p.incidents || 0;\n});\nconst synthese = Object.keys(parOuvrier).map(function (k) {\n    const o = parOuvrier[k];\n    return {\n        ouvrier: o.ouvrier,\n        postes: o.postes,\n        pieces: o.pieces,\n        heures: Math.round(o.minutes / 6) / 10,\n        trs_moyen: Math.round((o.trs / o.postes) * 10) / 10,\n        incidents: o.incidents,\n        cadence: o.minutes > 0 ? Math.round((o.pieces / o.minutes) * 60) : 0\n    };\n}).sort(function (a, b) { return b.pieces - a.pieces; });\n\nmsg.payload = {\n    maj: new Date().toLocaleTimeString('fr-FR'),\n    poste_en_cours: {\n        ouvrier: flow.get(\"ouvrier\") || \"Non renseigne\",\n        pieces: flow.get(\"nb_pieces\") || 0,\n        depuis_min: Math.round((Date.now() - (flow.get(\"debut_poste\") || Date.now())) / 60000)\n    },\n    postes: postes,\n    synthese: synthese,\n    diagnostics: diagnostics,\n    total_postes: postes.length,\n    total_diagnostics: diagnostics.length\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1120,
+        "y": 1150,
+        "wires": [
+            [
+                "b3f0a921d6e845c7",
+                "c4a1b8032f9e567d"
+            ]
+        ]
     }
 ]
