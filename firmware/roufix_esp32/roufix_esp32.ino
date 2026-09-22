@@ -48,7 +48,10 @@ const char* password = "";
 
 // --- Constantes logiques (Active LOW via optocoupleurs) ---
 #define ETAT_APPUYE LOW
-#define CAPOT_OUVERT LOW
+// Securite positive : le contact du capot est ferme quand le capot est
+// ferme (broche a la masse). Capot ouvert, fil coupe ou canal d'isolation
+// mort donnent tous le niveau haut, donc l'arret.
+#define CAPOT_OUVERT HIGH
 #define CAPTEUR_ACTIF LOW
 #define DCY_INACTIF HIGH
 #define DEFAUT_THERMIQUE HIGH
