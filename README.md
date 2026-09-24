@@ -66,10 +66,24 @@ failure mode):
   freewheeling diode, whose NO contact switches the 24 V load, itself protected
   by its own diode.
 
-`ROUFIX_test.pdsprj` is the test bench: the machine side is replaced by
-`LOGICSTATE` / `SW-SPST` substitutes on the inputs and by lamps and voltmeters
-on the outputs, so every channel can be exercised and measured without the
-real machine. `ROUFIX_doc.pdsprj` is the same design cleaned for documentation.
+The stage is qualified on a characterisation bench rather than drawn and
+assumed. The ESP32 is represented by its electrical equivalent from the
+datasheet — 3.3 V nominal, 2.64 V worst-case V_OH — and each reading is
+compared to a datasheet limit: input levels hold over 24 V ±10 % (0.18 V
+closed against a 0.825 V limit, 3.29 V open against 2.475 V), the output
+channel drives 70 mA into the coil with V_CE at 0.09 V and still does so at
+worst-case V_OH and worst-case CTR, a floating pin or a dead optocoupler
+leave the load at rest, and lifting either domain to 500 V draws 0.02 µA,
+i.e. 175 GΩ per channel against the 50 GΩ datasheet minimum. Without the
+freewheel diode the collector reaches the transistor's 40 V avalanche for
+200 µs at every release. Full programme and results: `docs/banc_proteus.md`.
+
+| File | Role |
+|---|---|
+| `ROUFIX_test.pdsprj` | nominal bench: 7 input channels and one output channel, instrumented |
+| `ROUFIX_banc_isolement.pdsprj` | same, plus the 500 V isolation chain |
+| `ROUFIX_banc_rouelibre.pdsprj` | same output channel with coil inductance, pulse generator and oscilloscope |
+| `ROUFIX_doc.pdsprj` | the card itself: 7 input and 4 output channels, ESP32 wired and excluded from simulation, no instruments |
 
 ## 3. Supervision layer — `node-red/flows.json`
 
