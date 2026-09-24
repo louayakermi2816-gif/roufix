@@ -10,10 +10,10 @@ Fichiers :
 
 | Fichier | Rôle |
 |---|---|
-| `proteus/ROUFIX_test.pdsprj` | banc nominal : 7 canaux d'entrée, 1 canal de sortie instrumenté |
+| `proteus/ROUFIX_test.pdsprj` | banc nominal : 7 canaux d'entrée, 1 canal de sortie, tous instrumentés |
 | `proteus/ROUFIX_banc_isolement.pdsprj` | copie avec la chaîne d'essai d'isolement (500 V) |
 | `proteus/ROUFIX_banc_rouelibre.pdsprj` | copie avec inductance de bobine, générateur d'impulsion et graphe transitoire |
-| `proteus/ROUFIX_doc.pdsprj` | schéma de documentation (ESP32 câblé, exclu de la simulation) |
+| `proteus/ROUFIX_doc.pdsprj` | schéma de la carte : 7 voies d'entrée, 4 voies de sortie, ESP32 câblé et exclu de la simulation, aucun instrument. Export vectoriel : `docs/images/carte_isolation.pdf` |
 
 ## 1. Principe
 
@@ -84,7 +84,7 @@ coupé donne le niveau haut, qui signifie « arrêt » dans le firmware
 
 | Essai | B1 | Contact | I_F attendu | V coll. attendu | Critère | **I_F mesuré** | **V mesuré** | Verdict |
 |---|---|---|---|---|---|---|---|---|
-| Nominal, actif | 24 V | fermé | 10,4 mA | < 0,3 V | V < 0,825 V | **10,4 mA** | **0,18 V** | conforme |
+| Nominal, actif | 24 V | fermé | 10,4 mA | < 0,3 V | V < 0,825 V | **10,3 mA** | **0,18 V** | conforme |
 | Nominal, repos | 24 V | ouvert | 0 | 3,3 V | V > 2,475 V | **0,00 mA** | **3,29 V** | conforme |
 | 24 V bas (−10 %) | 21,6 V | fermé | 9,3 mA | < 0,3 V | V < 0,825 V | **9,29 mA** | **0,18 V** | conforme |
 | 24 V haut (+10 %) | 26,4 V | fermé | 11,5 mA | < 0,3 V | P(R1) = 0,29 W | **11,5 mA** | **0,18 V** | conforme — **R1 en 0,5 W** |
@@ -95,12 +95,13 @@ Remarques :
 - Le 0,18 V mesuré est le V_CE(sat) du modèle ; la datasheet PC817 donne 0,1 V
   typique, **0,2 V maximum** (I_F = 20 mA, I_C = 1 mA). Le modèle est au
   maximum garanti : la mesure est pessimiste, donc valable comme preuve.
-- Le courant de LED mesuré (10,4 mA) correspond à V_F = 1,16 V, valeur du
+- Le courant de LED mesuré (10,3 mA) correspond à V_F = 1,16 V, valeur du
   modèle : (24 − 1,16) / 2 200 = 10,38 mA.
 - Le 10 kΩ externe est **obligatoire** sur GPIO 34 et 35 (pas de tirage
   interne) ; il est présent sur les sept canaux par conception.
-- Les sept canaux ont été relevés simultanément en simulation : les trois
-  canaux fermés lisent 10,4 mA / 0,18 V, les quatre canaux ouverts 0 / 3,29 V.
+- Les sept canaux ont été relevés simultanément en simulation (capture
+  `docs/images/banc_entrees.png`) : les trois canaux fermés lisent
+  10,3 mA / 0,18 V, les quatre canaux ouverts 0,00 mA / 3,29 V.
 
 ## 4. Bloc de sortie — canal KM1 (GPIO 26)
 
@@ -181,8 +182,8 @@ la datasheet.
 
 | Essai | Domaine soulevé | Attendu | **A_ISO mesuré** | Autres instruments | Lecture |
 |---|---|---|---|---|---|
-| I-1 | 24 V (`GND_24V`) | 7 nA (14 chemins de 1 TΩ dans les 7 PC817 d'entrée) | **+0,01 µA** | 7 canaux d'entrée et bloc de sortie **inchangés** | courant de barrière < 10 nA (résolution) → R_ISO > 50 GΩ, conforme |
-| I-2 | 5 V (`GND_5V`) | 1 nA (2 chemins de 1 TΩ dans U13) | **+0,00 µA** | A1, A2, A3, V1, V2 **inchangés** | idem ; aucun chemin bobine ↔ contact dans le relais |
+| I-1 | 24 V (`GND_24V`) | quelques nA (14 chemins de 1 TΩ dans les 7 PC817 d'entrée) | **0,02 µA** | 7 canaux d'entrée et bloc de sortie **inchangés** (70,0 mA dans la bobine, lampe allumée) | 500 V / 0,02 µA = 25 GΩ pour les 7 voies en parallèle, soit **175 GΩ par voie** — 3,5 fois le minimum datasheet (50 GΩ) |
+| I-2 | 5 V (`GND_5V`) | 1 nA (2 chemins de 1 TΩ dans U13) | **0,00 µA** (sous la résolution) | A1, A2, A3, V1, V2 **inchangés** | idem ; aucun chemin bobine ↔ contact dans le relais |
 | I-3 contre-essai | 24 V, **U1 percé** (fil entre A et C du PC817 du canal Cp) | ≈ 43 mA : (524 − 3,3) V / (2,2 kΩ + 10 kΩ) | **42,7 mA** (signe selon le sens de câblage) | ampèremètre du canal Cp : **42,7 mA** ; voltmètre du nœud GPIO33 : **+430 V** ; les 6 autres canaux inchangés | le banc **détecte** une barrière percée : GPIO33 verrait 430 V — l'ESP32 est détruit. C'est ce contre quoi la couche d'isolation protège |
 
 Pièges rencontrés et corrigés (à connaître pour refaire l'essai) :
@@ -282,6 +283,16 @@ mesure : le transistor claque bien avant.
 
 Captures associées : `docs/images/rouelibre_avec_D9.png`,
 `docs/images/rouelibre_sans_D9.png`.
+
+## 6 bis. Captures du banc
+
+| Capture | Ce qu'elle montre |
+|---|---|
+| `docs/images/banc_entrees.png` | les 7 voies d'entrée en simulation |
+| `docs/images/banc_sortie_nominal.png` | la voie KM1 instrumentée, essai nominal |
+| `docs/images/isolement_500V.png` | essai I-1 : domaine 24 V à 500 V, 0,02 µA de fuite, et le reste du banc inchangé |
+| `docs/images/rouelibre_avec_D9.png` / `_sans_D9.png` | les deux transitoires de coupure |
+| `docs/images/carte_isolation.pdf` | le schéma de la carte (export vectoriel) |
 
 ## 7. Ce que le banc prouve — et ce qu'il ne prouve pas
 
