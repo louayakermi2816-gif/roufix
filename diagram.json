@@ -554,6 +554,15 @@
       }
     },
     {
+      "type": "wokwi-resistor",
+      "id": "rpd1",
+      "top": -710,
+      "left": 350,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
       "type": "wokwi-text",
       "id": "t24",
       "top": -830,
@@ -592,6 +601,15 @@
       "attrs": {
         "color": "blue",
         "label": "KM2"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rpd2",
+      "top": -330,
+      "left": 350,
+      "attrs": {
+        "value": "10000"
       }
     },
     {
@@ -636,6 +654,15 @@
       }
     },
     {
+      "type": "wokwi-resistor",
+      "id": "rpd3",
+      "top": 50,
+      "left": 350,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
       "type": "wokwi-text",
       "id": "t28",
       "top": -70,
@@ -674,6 +701,15 @@
       "attrs": {
         "color": "yellow",
         "label": "A-"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rpd4",
+      "top": 430,
+      "left": 350,
+      "attrs": {
+        "value": "10000"
       }
     },
     {
@@ -1067,6 +1103,18 @@
       []
     ],
     [
+      "k1:IN",
+      "rpd1:1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "rpd1:2",
+      "esp:GND.1",
+      "#ffd54f",
+      []
+    ],
+    [
       "alim2:VM",
       "k1:COM",
       "#bdbdbd",
@@ -1098,6 +1146,18 @@
     ],
     [
       "k2:GND",
+      "esp:GND.1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k2:IN",
+      "rpd2:1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "rpd2:2",
       "esp:GND.1",
       "#ffd54f",
       []
@@ -1139,6 +1199,18 @@
       []
     ],
     [
+      "k3:IN",
+      "rpd3:1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "rpd3:2",
+      "esp:GND.1",
+      "#ffd54f",
+      []
+    ],
+    [
       "alim2:VM",
       "k3:COM",
       "#bdbdbd",
@@ -1170,6 +1242,18 @@
     ],
     [
       "k4:GND",
+      "esp:GND.1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k4:IN",
+      "rpd4:1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "rpd4:2",
       "esp:GND.1",
       "#ffd54f",
       []
