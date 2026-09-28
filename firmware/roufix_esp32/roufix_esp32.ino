@@ -339,6 +339,12 @@ void loop() {
           // Si temps_total vaut 0, le cycle a ete avorte : la supervision
           // ne comptera pas de piece (elle exige duree_cycle > 0).
           publierEtat("evenement", "ATTENTE", "Aucun", temps_total);
+
+          // Cycle termine : le chronometre repart de zero. Sans cela, un arret
+          // securite machine a l'arret (capot ouvert entre deux pieces)
+          // publierait le temps ecoule depuis le debut du dernier cycle, et la
+          // supervision compterait un rebut qui n'existe pas.
+          temps_debut_cycle = 0;
           break;
         }
         case FIXATION:
