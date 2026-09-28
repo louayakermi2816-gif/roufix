@@ -6,23 +6,84 @@
     {
       "type": "board-esp32-devkit-c-v4",
       "id": "esp",
-      "top": 105.6,
-      "left": -14.36,
+      "top": -120,
+      "left": -150,
       "attrs": {}
     },
     {
       "type": "wokwi-gateway",
       "id": "gateway",
-      "top": -100,
-      "left": -400,
+      "top": -1050,
+      "left": -150,
       "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t1",
+      "top": -1000,
+      "left": -1450,
+      "attrs": {
+        "text": "COTE MACHINE 24 V",
+        "fontSize": "22px",
+        "color": "#e0e0e0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t2",
+      "top": -1000,
+      "left": -900,
+      "attrs": {
+        "text": "ISOLATION (PC817)",
+        "fontSize": "22px",
+        "color": "#e0e0e0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t3",
+      "top": -1000,
+      "left": -560,
+      "attrs": {
+        "text": "COTE COMMANDE 3,3 V",
+        "fontSize": "22px",
+        "color": "#e0e0e0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t4",
+      "top": -1000,
+      "left": 500,
+      "attrs": {
+        "text": "SORTIES (relais)",
+        "fontSize": "22px",
+        "color": "#e0e0e0"
+      }
+    },
+    {
+      "type": "chip-alim24",
+      "id": "alim",
+      "top": -60,
+      "left": -1700,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t5",
+      "top": -130,
+      "left": -1720,
+      "attrs": {
+        "text": "Alim. machine 24 V",
+        "fontSize": "16px",
+        "color": "#bdbdbd"
+      }
     },
     {
       "type": "wokwi-pushbutton",
       "id": "btn1",
-      "top": 2.4,
-      "left": -19,
-      "rotate": 180,
+      "top": -860,
+      "left": -1450,
       "attrs": {
         "color": "green",
         "xray": "1",
@@ -30,163 +91,37 @@
       }
     },
     {
-      "type": "wokwi-led",
-      "id": "led1",
-      "top": 73.2,
-      "left": 263,
+      "type": "wokwi-resistor",
+      "id": "rm1",
+      "top": -848,
+      "left": -1200,
       "attrs": {
-        "color": "blue"
+        "value": "2200"
       }
     },
     {
-      "type": "wokwi-led",
-      "id": "led2",
-      "top": -3.6,
-      "left": 224.6,
+      "type": "chip-pc817",
+      "id": "u1",
+      "top": -870,
+      "left": -900,
       "attrs": {
-        "color": "red"
+        "defaut": "0"
       }
-    },
-    {
-      "type": "wokwi-pushbutton",
-      "id": "btn2",
-      "top": 265.4,
-      "left": 163.2,
-      "attrs": {
-        "color": "red",
-        "xray": "1",
-        "key": "2"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led3",
-      "top": 54,
-      "left": 138.2,
-      "attrs": {
-        "color": "yellow"
-      }
-    },
-    {
-      "type": "wokwi-pushbutton",
-      "id": "btn3",
-      "top": 111.8,
-      "left": 307.2,
-      "attrs": {
-        "color": "blue",
-        "xray": "1",
-        "key": "3"
-      }
-    },
-    {
-      "type": "wokwi-led",
-      "id": "led4",
-      "top": 159.6,
-      "left": -130.6,
-      "attrs": {
-        "color": "white"
-      }
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "sw1",
-      "top": 311.6,
-      "left": 99.1,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "sw2",
-      "top": 4.4,
-      "left": 99.1,
-      "attrs": {}
     },
     {
       "type": "wokwi-resistor",
       "id": "r1",
-      "top": 177.6,
-      "left": -192.55,
-      "rotate": 90,
+      "top": -930,
+      "left": -560,
       "attrs": {
         "value": "10000"
       }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r2",
-      "top": 128.75,
-      "left": -297.6,
-      "rotate": 90,
-      "attrs": {
-        "value": "10000"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r3",
-      "top": -24.55,
-      "left": -11,
-      "rotate": 180,
-      "attrs": {
-        "value": "10000"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r4",
-      "top": -24.85,
-      "left": 86.4,
-      "attrs": {
-        "value": "10000"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r5",
-      "top": 417.05,
-      "left": 8.2,
-      "rotate": 180,
-      "attrs": {
-        "value": "10000"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r6",
-      "top": 455.15,
-      "left": -28.8,
-      "attrs": {
-        "value": "10000"
-      }
-    },
-    {
-      "type": "wokwi-resistor",
-      "id": "r7",
-      "top": 493.55,
-      "left": 9.6,
-      "attrs": {
-        "value": "10000"
-      }
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "sw3",
-      "top": 311.6,
-      "left": -304.1,
-      "attrs": {}
-    },
-    {
-      "type": "wokwi-slide-switch",
-      "id": "sw4",
-      "top": 138.8,
-      "left": -227.3,
-      "attrs": {}
     },
     {
       "type": "wokwi-text",
-      "id": "lbl_btn1",
-      "top": -50,
-      "left": -105,
+      "id": "t6",
+      "top": -920,
+      "left": -1450,
       "attrs": {
         "text": "S1 - depart cycle",
         "fontSize": "16px",
@@ -195,86 +130,58 @@
     },
     {
       "type": "wokwi-text",
-      "id": "lbl_sw2",
-      "top": -52,
-      "left": 99.1,
+      "id": "t7",
+      "top": -920,
+      "left": -440,
       "attrs": {
-        "text": "Dcy - marche generale",
-        "fontSize": "16px",
+        "text": "GPIO 32",
+        "fontSize": "13px",
         "color": "#7ec8ff"
       }
     },
     {
-      "type": "wokwi-text",
-      "id": "lbl_led2",
-      "top": -30,
-      "left": 224.6,
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": -620,
+      "left": -1450,
       "attrs": {
-        "text": "A+ - sortie verin",
-        "fontSize": "16px",
-        "color": "#ffd54f"
+        "color": "red",
+        "xray": "1",
+        "key": "2"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rm2",
+      "top": -608,
+      "left": -1200,
+      "attrs": {
+        "value": "2200"
+      }
+    },
+    {
+      "type": "chip-pc817",
+      "id": "u2",
+      "top": -630,
+      "left": -900,
+      "attrs": {
+        "defaut": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": -690,
+      "left": -560,
+      "attrs": {
+        "value": "10000"
       }
     },
     {
       "type": "wokwi-text",
-      "id": "lbl_led3",
-      "top": 22,
-      "left": 138.2,
-      "attrs": {
-        "text": "A- - rentree verin",
-        "fontSize": "16px",
-        "color": "#ffd54f"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "lbl_led1",
-      "top": 45,
-      "left": 263,
-      "attrs": {
-        "text": "KM2 - entrainement cable",
-        "fontSize": "16px",
-        "color": "#ffd54f"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "lbl_btn3",
-      "top": 86,
-      "left": 307.2,
-      "attrs": {
-        "text": "Rt - fin de retour",
-        "fontSize": "16px",
-        "color": "#7ec8ff"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "lbl_sw4",
-      "top": 112,
-      "left": -227.3,
-      "attrs": {
-        "text": "Rth1 - thermique M1",
-        "fontSize": "16px",
-        "color": "#7ec8ff"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "lbl_led4",
-      "top": 205,
-      "left": -130.6,
-      "attrs": {
-        "text": "KM1 - disque abrasif",
-        "fontSize": "16px",
-        "color": "#ffd54f"
-      }
-    },
-    {
-      "type": "wokwi-text",
-      "id": "lbl_btn2",
-      "top": 239,
-      "left": 163.2,
+      "id": "t8",
+      "top": -680,
+      "left": -1450,
       "attrs": {
         "text": "St - fin de serrage",
         "fontSize": "16px",
@@ -283,9 +190,304 @@
     },
     {
       "type": "wokwi-text",
-      "id": "lbl_sw3",
-      "top": 285,
-      "left": -304.1,
+      "id": "t9",
+      "top": -680,
+      "left": -440,
+      "attrs": {
+        "text": "GPIO 25",
+        "fontSize": "13px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn3",
+      "top": -380,
+      "left": -1450,
+      "attrs": {
+        "color": "blue",
+        "xray": "1",
+        "key": "3"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rm3",
+      "top": -368,
+      "left": -1200,
+      "attrs": {
+        "value": "2200"
+      }
+    },
+    {
+      "type": "chip-pc817",
+      "id": "u3",
+      "top": -390,
+      "left": -900,
+      "attrs": {
+        "defaut": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": -450,
+      "left": -560,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t10",
+      "top": -440,
+      "left": -1450,
+      "attrs": {
+        "text": "Rt - fin de retour",
+        "fontSize": "16px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t11",
+      "top": -440,
+      "left": -440,
+      "attrs": {
+        "text": "GPIO 27",
+        "fontSize": "13px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "sw1",
+      "top": -140,
+      "left": -1450,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rm4",
+      "top": -128,
+      "left": -1200,
+      "attrs": {
+        "value": "2200"
+      }
+    },
+    {
+      "type": "chip-pc817",
+      "id": "u4",
+      "top": -150,
+      "left": -900,
+      "attrs": {
+        "defaut": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r4",
+      "top": -210,
+      "left": -560,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t12",
+      "top": -200,
+      "left": -1450,
+      "attrs": {
+        "text": "Cp - capot",
+        "fontSize": "16px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t13",
+      "top": -176,
+      "left": -1450,
+      "attrs": {
+        "text": "contact NC, ferme au repos",
+        "fontSize": "13px",
+        "color": "#bdbdbd"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t14",
+      "top": -200,
+      "left": -440,
+      "attrs": {
+        "text": "GPIO 33",
+        "fontSize": "13px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "sw2",
+      "top": 100,
+      "left": -1450,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rm5",
+      "top": 112,
+      "left": -1200,
+      "attrs": {
+        "value": "2200"
+      }
+    },
+    {
+      "type": "chip-pc817",
+      "id": "u5",
+      "top": 90,
+      "left": -900,
+      "attrs": {
+        "defaut": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r5",
+      "top": 30,
+      "left": -560,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t15",
+      "top": 40,
+      "left": -1450,
+      "attrs": {
+        "text": "Dcy - marche generale",
+        "fontSize": "16px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t16",
+      "top": 40,
+      "left": -440,
+      "attrs": {
+        "text": "GPIO 5",
+        "fontSize": "13px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "sw4",
+      "top": 340,
+      "left": -1450,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rm6",
+      "top": 352,
+      "left": -1200,
+      "attrs": {
+        "value": "2200"
+      }
+    },
+    {
+      "type": "chip-pc817",
+      "id": "u6",
+      "top": 330,
+      "left": -900,
+      "attrs": {
+        "defaut": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r6",
+      "top": 270,
+      "left": -560,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t17",
+      "top": 280,
+      "left": -1450,
+      "attrs": {
+        "text": "Rth1 - thermique M1",
+        "fontSize": "16px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t18",
+      "top": 304,
+      "left": -1450,
+      "attrs": {
+        "text": "contact NC, ferme au repos",
+        "fontSize": "13px",
+        "color": "#bdbdbd"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t19",
+      "top": 280,
+      "left": -440,
+      "attrs": {
+        "text": "GPIO 34",
+        "fontSize": "13px",
+        "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "sw3",
+      "top": 580,
+      "left": -1450,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rm7",
+      "top": 592,
+      "left": -1200,
+      "attrs": {
+        "value": "2200"
+      }
+    },
+    {
+      "type": "chip-pc817",
+      "id": "u7",
+      "top": 570,
+      "left": -900,
+      "attrs": {
+        "defaut": "0"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r7",
+      "top": 510,
+      "left": -560,
+      "attrs": {
+        "value": "10000"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t20",
+      "top": 520,
+      "left": -1450,
       "attrs": {
         "text": "Rth2 - thermique M2",
         "fontSize": "16px",
@@ -294,13 +496,206 @@
     },
     {
       "type": "wokwi-text",
-      "id": "lbl_sw1",
-      "top": 362,
-      "left": 99.1,
+      "id": "t21",
+      "top": 544,
+      "left": -1450,
       "attrs": {
-        "text": "Cp - capot",
-        "fontSize": "16px",
+        "text": "contact NC, ferme au repos",
+        "fontSize": "13px",
+        "color": "#bdbdbd"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t22",
+      "top": 520,
+      "left": -440,
+      "attrs": {
+        "text": "GPIO 35",
+        "fontSize": "13px",
         "color": "#7ec8ff"
+      }
+    },
+    {
+      "type": "chip-alim24",
+      "id": "alim2",
+      "top": -60,
+      "left": 1250,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t23",
+      "top": -130,
+      "left": 1230,
+      "attrs": {
+        "text": "Alim. machine 24 V",
+        "fontSize": "16px",
+        "color": "#bdbdbd"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "k1",
+      "top": -780,
+      "left": 500,
+      "attrs": {
+        "transistor": "npn"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led4",
+      "top": -770,
+      "left": 950,
+      "attrs": {
+        "color": "white",
+        "label": "KM1"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t24",
+      "top": -830,
+      "left": 500,
+      "attrs": {
+        "text": "KM1 - disque abrasif",
+        "fontSize": "16px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t25",
+      "top": -806,
+      "left": 500,
+      "attrs": {
+        "text": "GPIO 26",
+        "fontSize": "13px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "k2",
+      "top": -400,
+      "left": 500,
+      "attrs": {
+        "transistor": "npn"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led1",
+      "top": -390,
+      "left": 950,
+      "attrs": {
+        "color": "blue",
+        "label": "KM2"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t26",
+      "top": -450,
+      "left": 500,
+      "attrs": {
+        "text": "KM2 - entrainement cable",
+        "fontSize": "16px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t27",
+      "top": -426,
+      "left": 500,
+      "attrs": {
+        "text": "GPIO 19",
+        "fontSize": "13px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "k3",
+      "top": -20,
+      "left": 500,
+      "attrs": {
+        "transistor": "npn"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led2",
+      "top": -10,
+      "left": 950,
+      "attrs": {
+        "color": "red",
+        "label": "A+"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t28",
+      "top": -70,
+      "left": 500,
+      "attrs": {
+        "text": "A+ - sortie verin",
+        "fontSize": "16px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t29",
+      "top": -46,
+      "left": 500,
+      "attrs": {
+        "text": "GPIO 21",
+        "fontSize": "13px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-relay-module",
+      "id": "k4",
+      "top": 360,
+      "left": 500,
+      "attrs": {
+        "transistor": "npn"
+      }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led3",
+      "top": 370,
+      "left": 950,
+      "attrs": {
+        "color": "yellow",
+        "label": "A-"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t30",
+      "top": 310,
+      "left": 500,
+      "attrs": {
+        "text": "A- - rentree verin",
+        "fontSize": "16px",
+        "color": "#ffd54f"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "t31",
+      "top": 334,
+      "left": 500,
+      "attrs": {
+        "text": "GPIO 23",
+        "fontSize": "13px",
+        "color": "#ffd54f"
       }
     }
   ],
@@ -318,308 +713,484 @@
       []
     ],
     [
+      "alim:VM",
       "btn1:1.l",
-      "esp:GND.2",
-      "green",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "led1:A",
-      "esp:19",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "led1:C",
-      "esp:GND.2",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "led2:A",
-      "esp:21",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "led2:C",
-      "esp:GND.2",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "btn2:1.l",
-      "esp:GND.3",
-      "green",
-      [
-        "h-38.4",
-        "v-86.4"
-      ]
-    ],
-    [
-      "led3:A",
-      "esp:23",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "led3:C",
-      "esp:GND.2",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "btn3:1.l",
-      "esp:GND.2",
-      "green",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "led4:A",
-      "esp:26",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "led4:C",
-      "esp:GND.1",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "sw1:1",
-      "esp:GND.1",
-      "green",
-      [
-        "v0",
-        "h-124.8",
-        "v-96"
-      ]
+      "#bdbdbd",
+      []
     ],
     [
       "btn1:2.r",
-      "esp:32",
-      "green",
-      [
-        "h-29",
-        "v172.6"
-      ]
+      "rm1:1",
+      "#bdbdbd",
+      []
     ],
     [
-      "sw1:2",
-      "esp:33",
-      "green",
-      [
-        "v19.2",
-        "h-153.5",
-        "v-163.2"
-      ]
+      "rm1:2",
+      "u1:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u1:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u1:C",
+      "esp:32",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u1:C",
+      "r1:1",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "r1:2",
+      "esp:3V3",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u1:E",
+      "esp:GND.2",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "alim:VM",
+      "btn2:1.l",
+      "#bdbdbd",
+      []
     ],
     [
       "btn2:2.r",
+      "rm2:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "rm2:2",
+      "u2:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u2:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u2:C",
       "esp:25",
-      "green",
-      [
-        "h0.2",
-        "v86.6",
-        "h-288",
-        "v-172.8"
-      ]
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u2:C",
+      "r2:1",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "r2:2",
+      "esp:3V3",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u2:E",
+      "esp:GND.3",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "alim:VM",
+      "btn3:1.l",
+      "#bdbdbd",
+      []
     ],
     [
       "btn3:2.r",
+      "rm3:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "rm3:2",
+      "u3:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u3:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u3:C",
       "esp:27",
-      "green",
-      [
-        "h19.4",
-        "v259.4",
-        "h-460.8",
-        "v-172.8"
-      ]
+      "#7ec8ff",
+      []
     ],
     [
-      "sw2:1",
-      "esp:GND.2",
-      "green",
-      [
-        "v96",
-        "h-19.2"
-      ]
-    ],
-    [
-      "sw2:2",
-      "esp:5",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "r1:1",
-      "esp:3V3",
-      "green",
-      [
-        "h-0.55",
-        "v-75.95"
-      ]
-    ],
-    [
-      "esp:34",
-      "r1:2",
-      "green",
-      [
-        "h-134.25",
-        "v48"
-      ]
-    ],
-    [
-      "r2:1",
-      "esp:3V3",
-      "green",
-      [
-        "h0"
-      ]
-    ],
-    [
-      "esp:35",
-      "r2:2",
-      "green",
-      [
-        "h0"
-      ]
-    ],
-    [
+      "u3:C",
       "r3:1",
-      "esp:3V3",
-      "green",
-      [
-        "v0"
-      ]
+      "#7ec8ff",
+      []
     ],
     [
       "r3:2",
-      "btn1:2.r",
-      "green",
-      [
-        "v0"
-      ]
+      "esp:3V3",
+      "#7ec8ff",
+      []
     ],
     [
+      "u3:E",
+      "esp:GND.2",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "alim:VM",
+      "sw1:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "sw1:2",
+      "rm4:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "rm4:2",
+      "u4:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u4:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u4:C",
+      "esp:33",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u4:C",
       "r4:1",
-      "esp:3V3",
-      "green",
-      [
-        "v0"
-      ]
+      "#7ec8ff",
+      []
     ],
     [
       "r4:2",
-      "esp:5",
-      "green",
-      [
-        "v0"
-      ]
-    ],
-    [
-      "r5:1",
       "esp:3V3",
-      "green",
-      [
-        "v0"
-      ]
+      "#7ec8ff",
+      []
     ],
     [
-      "esp:25",
+      "u4:E",
+      "esp:GND.3",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "alim:VM",
+      "sw2:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "sw2:2",
+      "rm5:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "rm5:2",
+      "u5:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u5:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u5:C",
+      "esp:5",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u5:C",
+      "r5:1",
+      "#7ec8ff",
+      []
+    ],
+    [
       "r5:2",
-      "green",
-      [
-        "v0"
-      ]
+      "esp:3V3",
+      "#7ec8ff",
+      []
     ],
     [
+      "u5:E",
+      "esp:GND.2",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "alim:VM",
+      "sw4:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "sw4:2",
+      "rm6:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "rm6:2",
+      "u6:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u6:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u6:C",
+      "esp:34",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u6:C",
       "r6:1",
-      "esp:27",
-      "green",
-      [
-        "v0"
-      ]
+      "#7ec8ff",
+      []
     ],
     [
       "r6:2",
       "esp:3V3",
-      "green",
-      [
-        "v0"
-      ]
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u6:E",
+      "esp:GND.3",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "alim:VM",
+      "sw3:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "sw3:2",
+      "rm7:1",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "rm7:2",
+      "u7:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u7:K",
+      "alim:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "u7:C",
+      "esp:35",
+      "#7ec8ff",
+      []
+    ],
+    [
+      "u7:C",
+      "r7:1",
+      "#7ec8ff",
+      []
     ],
     [
       "r7:2",
       "esp:3V3",
-      "green",
-      [
-        "v0"
-      ]
+      "#7ec8ff",
+      []
     ],
     [
-      "esp:33",
-      "r7:1",
-      "green",
-      [
-        "h0"
-      ]
+      "u7:E",
+      "esp:GND.2",
+      "#7ec8ff",
+      []
     ],
     [
-      "sw3:1",
+      "esp:26",
+      "k1:IN",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k1:VCC",
+      "esp:5V",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k1:GND",
       "esp:GND.1",
-      "green",
-      [
-        "v0"
-      ]
+      "#ffd54f",
+      []
     ],
     [
-      "sw3:2",
-      "esp:35",
-      "green",
-      [
-        "v9.6",
-        "h-28.7"
-      ]
+      "alim2:VM",
+      "k1:COM",
+      "#bdbdbd",
+      []
     ],
     [
-      "sw4:1",
+      "k1:NO",
+      "led4:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "led4:C",
+      "alim2:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "esp:19",
+      "k2:IN",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k2:VCC",
+      "esp:5V",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k2:GND",
       "esp:GND.1",
-      "green",
-      [
-        "v0"
-      ]
+      "#ffd54f",
+      []
     ],
     [
-      "esp:34",
-      "sw4:2",
-      "green",
-      [
-        "h0"
-      ]
+      "alim2:VM",
+      "k2:COM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "k2:NO",
+      "led1:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "led1:C",
+      "alim2:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "esp:21",
+      "k3:IN",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k3:VCC",
+      "esp:5V",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k3:GND",
+      "esp:GND.1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "alim2:VM",
+      "k3:COM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "k3:NO",
+      "led2:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "led2:C",
+      "alim2:GNDM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "esp:23",
+      "k4:IN",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k4:VCC",
+      "esp:5V",
+      "#ffd54f",
+      []
+    ],
+    [
+      "k4:GND",
+      "esp:GND.1",
+      "#ffd54f",
+      []
+    ],
+    [
+      "alim2:VM",
+      "k4:COM",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "k4:NO",
+      "led3:A",
+      "#bdbdbd",
+      []
+    ],
+    [
+      "led3:C",
+      "alim2:GNDM",
+      "#bdbdbd",
+      []
     ]
   ],
   "dependencies": {}

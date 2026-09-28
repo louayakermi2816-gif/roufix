@@ -2,3 +2,11 @@
 version = 1
 firmware = 'build/firmware.elf'
 elf = 'build/firmware.elf'
+
+[[chip]]
+name = 'pc817'
+binary = 'chips/pc817/pc817.chip.wasm'
+
+[[chip]]
+name = 'alim24'
+binary = 'chips/alim24/alim24.chip.wasm'

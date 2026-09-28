@@ -1,0 +1,15 @@
+{
+  "name": "pc817",
+  "author": "Louay Akremi",
+  "pins": ["A", "K", "C", "E"],
+  "controls": [
+    {
+      "id": "defaut",
+      "label": "Defaut (0 sain, 1 ouvert, 2 court)",
+      "type": "range",
+      "min": 0,
+      "max": 2,
+      "step": 1
+    }
+  ]
+}
