@@ -23,6 +23,9 @@
 //   1 = ouvert   optocoupleur detruit ou fil coupe : C reste relache,
 //                l'ESP32 lit en permanence l'etat haut
 //   2 = court    voie collee : C reste a la masse
+//
+// L'attribut est relu toutes les 20 ms : un defaut peut donc etre injecte
+// pendant la simulation, machine en marche, depuis le curseur de la puce.
 // ============================================================
 
 #include "wokwi-api.h"
@@ -60,6 +63,10 @@ static void sur_changement(void *user_data, pin_t pin, uint32_t value) {
   appliquer((etat_t *)user_data);
 }
 
+static void sur_minuterie(void *user_data) {
+  appliquer((etat_t *)user_data);
+}
+
 void chip_init(void) {
   etat_t *etat = malloc(sizeof(etat_t));
 
@@ -80,6 +87,12 @@ void chip_init(void) {
   };
   pin_watch(etat->pin_a, &surveillance);
   pin_watch(etat->pin_k, &surveillance);
+
+  const timer_config_t minuterie = {
+    .user_data = etat,
+    .callback = sur_minuterie,
+  };
+  timer_start(timer_init(&minuterie), 20000, true);
 
   appliquer(etat);
 }
