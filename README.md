@@ -103,8 +103,10 @@ and archive.
   good pieces / engaged pieces — **measured**, no longer assumed equal to 1.
 - **SPC drift detection** (`Detection derive`): learn a baseline of 10 cycles
   (30–50 recommended in production), freeze mean ± 3σ control limits, then flag
-  *high drift* (cycle too long — typical of abrasive-disc wear) or *low drift*
-  (abnormally short — clamping/sensor issue).
+  *high drift* (cycle too long) or *low drift* (abnormally short). Stripping
+  is timed (3 s fixed), so a drift can only come from the clamp and return
+  strokes — pneumatic pressure, cylinder, end-of-stroke sensors; disc and
+  motor faults show up through the thermal relays instead.
 - **Per-operator shift archive**: the operator enters their name, closes the
   shift from the dashboard, and one row is appended to the `Postes` sheet of
   `roufix_suivi.xlsx` (date, times, operator, good pieces, rejects, engaged
