@@ -30,7 +30,7 @@
         "id": "b68f2e9d50a4675f",
         "type": "mqtt-broker",
         "name": "",
-        "broker": "broker.hivemq.com",
+        "broker": "test.mosquitto.org",
         "port": 1883,
         "clientid": "",
         "autoConnect": true,

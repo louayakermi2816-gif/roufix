@@ -160,8 +160,9 @@ never left without an instruction, and the SPC facts stay on screen either way.
 the `esp32:esp32` core, run `build-wokwi.bat`, then `F1 → Wokwi: Start Simulator`
 (`wokwi.toml` points to `build/firmware.elf`). Set `ssid`, `password` and
 `mqtt_server` at the top of the sketch for real hardware; the defaults use the
-Wokwi guest network and the public HiveMQ test broker — use a private Mosquitto
-broker in production.
+Wokwi guest network and the public `test.mosquitto.org` broker (the public
+HiveMQ broker stopped answering from the test network in September 2026) — use
+a private Mosquitto broker in production.
 
 **Node-RED:** install `node-red-dashboard`, import `node-red/flows.json`, point the
 MQTT broker node at your broker, and set the workbook path in the

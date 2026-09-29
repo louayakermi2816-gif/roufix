@@ -8,7 +8,7 @@
 #include <string.h>   // strcat, strcmp, strncpy : construction des causes sans String
 
 // --- Paramètres MQTT ---
-const char* mqtt_server = "broker.hivemq.com";
+const char* mqtt_server = "test.mosquitto.org";
 const int mqtt_port = 1883;
 const char* topic_statut = "roufix/machine1/systeme/statut";
 const char* topic_data   = "roufix/machine1/data";
