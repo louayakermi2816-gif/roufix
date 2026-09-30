@@ -146,6 +146,30 @@ timeout (40 s), a stopped service or a malformed answer, a **fallback** node
 returns the standard level-1 maintenance procedure instead — the technician is
 never left without an instruction, and the SPC facts stay on screen either way.
 
+### Operator observation — semantic matching
+
+The language model only ranks within a closed list, and measurement showed
+that at 1 B parameters it mostly returns the list's own order: given a
+free-text operator observation it picked the matching cause 7 times out of
+19, and freed from the list it inverted relations between components. The
+part of the diagnosis that needs understanding is therefore done by an
+embedding model (`nomic-embed-text`, also served locally by Ollama).
+
+When an alert is displayed, the operator types what they see or hear
+("ça siffle près du vérin"). The sentence and each candidate cause's
+symptom sheet are turned into meaning vectors; the cause with the highest
+cosine similarity is shown with its action and score. Nothing is
+generated, so nothing can be invented; below a similarity of 0.60 the
+card says the match is uncertain instead of asserting it.
+
+Measured on 19 observations worded differently from the sheets: the right
+cause 18 times, and the one miss was the only answer under the threshold,
+so no wrong cause was ever asserted; about 1 s per analysis. Symptom
+sheets cite the constructor manual where it covers the point (§2.4
+pneumatic lines, §5.2 pressure reducers, §7 maintenance plan); the rest
+is general maintenance knowledge still to be validated by the plant's
+maintenance team. Test scripts and raw results: `docs/essais_ia/`.
+
 ## Degraded scenarios validated
 
 | Scenario | Behaviour |
