@@ -1,0 +1,129 @@
+Banc de l'observation operateur - 2026-09-30 - nomic-embed-text via Ollama
+phrases_dev : jeu de mise au point (fiches reecrites en le regardant)
+phrases_validation, phrases_hors_liste : ecrites avant la correction
+
+### AVANT : fiches d'origine, observation comparee a la seule liste du niveau mesure
+=== phrases_dev
+OK          long_mod  ok        0.68 cause  Il y a une fuite d'air qui siffle près du véri -> Pression pneumatique insuffisante
+prudent     long_mod  incertain 0.58 cause  Le manomètre du réseau affiche 3 bars au lieu  -> Detecteur de fin de course St ou Rt mal 
+OK          long_mod  ok        0.63 cause  La tige du vérin sort par saccades et grince   -> Verin de fixation lent (frottement, grai
+OK          long_mod  ok        0.65 cause  Le vérin semble sec, il n'a pas été graissé de -> Verin de fixation lent (frottement, grai
+OK          long_mod  ok        0.64 cause  Le témoin du capteur St s'allume bien après qu -> Detecteur de fin de course St ou Rt mal 
+OK          long_mod  ok        0.65 cause  L'électrovanne du vérin claque avec un temps d -> Distributeur A+/A- lent a commuter
+OK          long_mod  ok        0.70 cause  Quelqu'un a changé la durée de rognage sur la  -> Temporisation de rognage mal parametree
+OK          rth1      ok        0.81 cause  Le moteur M1 est plein de poussière et ses ouï -> Ventilation du moteur M1 obstruee
+OK          rth1      ok        0.69 cause  Le disque est dur à faire tourner à la main et -> Blocage ou frottement du disque abrasif
+OK          rth1      ok        0.70 cause  Le disque est très usé, il a perdu beaucoup de -> Disque abrasif M1 use : effort de coupe 
+OK          rth1      ok        0.78 cause  Le moteur est froid mais le relais thermique a -> Relais thermique RTH1 deregle ou defaill
+OK          rth1      ok        0.67 cause  On a enchaîné les pièces sans aucune pause tou -> Cadence trop elevee pour le refroidissem
+OK          rth2      ok        0.79 cause  Le câble est coincé dans le guide              -> Bourrage ou coincement du cable dans le 
+OK          rth2      ok        0.69 cause  On passe un câble beaucoup plus gros que d'hab -> Cable de section trop importante pour l'
+OK          rth2      ok        0.75 cause  Il y a un point dur quand on tourne l'entraîne -> Frein ou point dur sur la ligne d'entrai
+OK          rth2      ok        0.75 cause  Les ailettes de refroidissement du moteur M2 s -> Ventilation du moteur M2 obstruee
+OK          court_sev ok        0.71 cause  Le capteur de fin de course reste allumé en pe -> Detecteur de fin de course colle ou en c
+OK          court_sev ok        0.74 cause  Le vérin ne va pas jusqu'au bout de sa course  -> Course du verin non effectuee
+OK          court_sev ok        0.71 cause  Il n'y avait pas de câble dans la machine      -> Cable absent : serrage a vide
+FAUX-SUR    long_sev  ok        0.67 organe l'électrovanne du vérin claque en retard       -> Verin de fixation bloque en position
+OK          long_sev  ok        0.73 cause  on n'entend plus le clic de l'électrovanne     -> Distributeur A+/A- bloque
+FAUX-SUR    long_sev  ok        0.65 organe il y a une fuite d'air qui siffle près du véri -> Verin de fixation bloque en position
+OK          long_sev  ok        0.66 cause  le tuyau d'air est débranché                   -> Perte d'alimentation pneumatique
+OK          long_sev  ok        0.72 cause  la tige du vérin est coincée, elle ne sort plu -> Verin de fixation bloque en position
+OK          long_sev  ok        0.81 cause  le câble est écrasé dans le serrage            -> Bourrage du cable dans la zone de serrag
+OK          long_sev  ok        0.64 cause  le voyant du capteur St ne s'allume jamais     -> Detecteur de fin de course St ou Rt defa
+OK          long_sev  ok        0.64 organe la tige du vérin grince et avance par à-coups  -> Verin de fixation bloque en position
+OK          court_mod ok        0.70 cause  le voyant du capteur s'allume avant que le vér -> Detecteur de fin de course St ou Rt dere
+FAUX-SUR    court_mod ok        0.67 cause  le vérin claque très fort en fin de course     -> Detecteur de fin de course St ou Rt dere
+
+OK 25 | FAUX-SUR 3 | incertain 1 | total 29
+=== phrases_validation
+OK          long_sev  ok        0.68 cause  le vérin ne bouge plus du tout, il reste sorti -> Verin de fixation bloque en position
+OK          long_sev  ok        0.71 cause  la bobine de l'électrovanne est grillée, elle  -> Distributeur A+/A- bloque
+OK          long_sev  ok        0.68 cause  la vanne d'arrivée d'air de l'atelier est ferm -> Perte d'alimentation pneumatique
+OK          long_sev  ok        0.65 cause  le fil du capteur Rt a été arraché             -> Detecteur de fin de course St ou Rt defa
+OK          long_sev  ok        0.76 cause  un morceau de câble est resté pris dans le ser -> Bourrage du cable dans la zone de serrag
+OK          long_mod  ok        0.68 cause  le raccord du vérin est desserré et laisse pas -> Pression pneumatique insuffisante
+OK          long_mod  ok        0.64 cause  le vérin avance difficilement, il manque de gr -> Verin de fixation lent (frottement, grai
+OK          long_mod  ok        0.74 cause  le capteur St est décalé, il détecte le vérin  -> Detecteur de fin de course St ou Rt mal 
+OK          long_mod  ok        0.70 cause  le distributeur met du temps à basculer        -> Distributeur A+/A- lent a commuter
+OK          long_mod  ok        0.78 cause  la minuterie de rognage a été modifiée         -> Temporisation de rognage mal parametree
+OK          court_mod ok        0.72 cause  le réducteur de pression est réglé trop haut,  -> Pression pneumatique trop elevee
+OK          court_mod ok        0.67 cause  le capteur a bougé, il s'allume avant la fin d -> Detecteur de fin de course St ou Rt dere
+OK          court_sev ok        0.63 cause  le voyant du capteur Rt ne s'éteint jamais     -> Detecteur de fin de course colle ou en c
+OK          court_sev ok        0.74 cause  le vérin s'arrête au milieu de sa course       -> Course du verin non effectuee
+OK          court_sev ok        0.68 cause  la machine serre sans câble                    -> Cable absent : serrage a vide
+
+OK 15 | FAUX-SUR 0 | incertain 0 | total 15
+=== phrases_hors_liste
+OK          long_sev  ok        0.66 organe le vérin est lent, il manque d'huile           -> Verin de fixation bloque en position
+OK          long_sev  ok        0.61 organe le manomètre indique une pression un peu basse -> Perte d'alimentation pneumatique
+OK          long_sev  ok        0.70 organe le distributeur bascule avec un léger retard   -> Distributeur A+/A- bloque
+prudent     long_sev  incertain 0.59 organe on a réglé la durée de rognage à 5 secondes    -> Detecteur de fin de course St ou Rt defa
+bon-prudent long_mod  incertain 0.55 organe le tuyau d'air a été arraché                   -> Pression pneumatique insuffisante
+bon-prudent long_mod  incertain 0.59 organe la tige du vérin est complètement bloquée      -> Verin de fixation lent (frottement, grai
+prudent     rth1      incertain 0.56 organe le câble est coincé dans le guide              -> Relais thermique RTH1 deregle ou defaill
+prudent     rth2      incertain 0.57 organe le disque abrasif est usé                      -> Relais thermique RTH2 deregle ou defaill
+
+OK 3 | FAUX-SUR 0 | incertain 5 | total 8
+
+### APRES : fiches pneumatiques reecrites, famille entiere, organe par l'observation, degre par la mesure
+=== phrases_dev
+OK          long_mod  ok        0.68 cause  Il y a une fuite d'air qui siffle près du véri -> Pression pneumatique insuffisante
+prudent     long_mod  incertain 0.59 cause  Le manomètre du réseau affiche 3 bars au lieu  -> Bourrage du cable dans la zone de serrag
+OK          long_mod  ok        0.67 cause  La tige du vérin sort par saccades et grince   -> Verin de fixation lent (frottement, grai [degre mesure]
+OK          long_mod  ok        0.66 cause  Le vérin semble sec, il n'a pas été graissé de -> Verin de fixation lent (frottement, grai [degre mesure]
+OK          long_mod  ok        0.66 cause  Le témoin du capteur St s'allume bien après qu -> Detecteur de fin de course St ou Rt mal 
+OK          long_mod  ok        0.72 cause  L'électrovanne du vérin claque avec un temps d -> Distributeur A+/A- lent a commuter
+OK          long_mod  ok        0.69 cause  Quelqu'un a changé la durée de rognage sur la  -> Temporisation de rognage mal parametree
+OK          rth1      ok        0.81 cause  Le moteur M1 est plein de poussière et ses ouï -> Ventilation du moteur M1 obstruee
+OK          rth1      ok        0.69 cause  Le disque est dur à faire tourner à la main et -> Blocage ou frottement du disque abrasif
+OK          rth1      ok        0.70 cause  Le disque est très usé, il a perdu beaucoup de -> Disque abrasif M1 use : effort de coupe 
+OK          rth1      ok        0.78 cause  Le moteur est froid mais le relais thermique a -> Relais thermique RTH1 deregle ou defaill
+OK          rth1      ok        0.67 cause  On a enchaîné les pièces sans aucune pause tou -> Cadence trop elevee pour le refroidissem
+OK          rth2      ok        0.79 cause  Le câble est coincé dans le guide              -> Bourrage ou coincement du cable dans le 
+OK          rth2      ok        0.69 cause  On passe un câble beaucoup plus gros que d'hab -> Cable de section trop importante pour l'
+OK          rth2      ok        0.75 cause  Il y a un point dur quand on tourne l'entraîne -> Frein ou point dur sur la ligne d'entrai
+OK          rth2      ok        0.75 cause  Les ailettes de refroidissement du moteur M2 s -> Ventilation du moteur M2 obstruee
+OK          court_sev ok        0.73 cause  Le capteur de fin de course reste allumé en pe -> Detecteur de fin de course colle ou en c
+OK          court_sev ok        0.74 cause  Le vérin ne va pas jusqu'au bout de sa course  -> Course du verin non effectuee
+OK          court_sev ok        0.71 cause  Il n'y avait pas de câble dans la machine      -> Cable absent : serrage a vide
+OK          long_sev  ok        0.71 organe l'électrovanne du vérin claque en retard       -> Distributeur A+/A- bloque [degre mesure]
+OK          long_sev  ok        0.72 cause  on n'entend plus le clic de l'électrovanne     -> Distributeur A+/A- bloque
+OK          long_sev  ok        0.68 organe il y a une fuite d'air qui siffle près du véri -> Perte d'alimentation pneumatique [degre mesure]
+OK          long_sev  ok        0.65 cause  le tuyau d'air est débranché                   -> Perte d'alimentation pneumatique
+OK          long_sev  ok        0.69 cause  la tige du vérin est coincée, elle ne sort plu -> Verin de fixation bloque en position
+OK          long_sev  ok        0.81 cause  le câble est écrasé dans le serrage            -> Bourrage du cable dans la zone de serrag
+OK          long_sev  ok        0.64 cause  le voyant du capteur St ne s'allume jamais     -> Detecteur de fin de course St ou Rt defa
+OK          long_sev  ok        0.65 organe la tige du vérin grince et avance par à-coups  -> Verin de fixation bloque en position
+OK          court_mod ok        0.67 cause  le voyant du capteur s'allume avant que le vér -> Detecteur de fin de course St ou Rt dere
+FAUX-SUR    court_mod ok        0.66 cause  le vérin claque très fort en fin de course     -> Detecteur de fin de course St ou Rt dere
+
+OK 27 | FAUX-SUR 1 | incertain 1 | total 29
+=== phrases_validation
+OK          long_sev  ok        0.70 cause  le vérin ne bouge plus du tout, il reste sorti -> Verin de fixation bloque en position
+OK          long_sev  ok        0.71 cause  la bobine de l'électrovanne est grillée, elle  -> Distributeur A+/A- bloque
+OK          long_sev  ok        0.66 cause  la vanne d'arrivée d'air de l'atelier est ferm -> Perte d'alimentation pneumatique
+OK          long_sev  ok        0.66 cause  le fil du capteur Rt a été arraché             -> Detecteur de fin de course St ou Rt defa
+OK          long_sev  ok        0.76 cause  un morceau de câble est resté pris dans le ser -> Bourrage du cable dans la zone de serrag
+OK          long_mod  ok        0.68 cause  le raccord du vérin est desserré et laisse pas -> Pression pneumatique insuffisante
+OK          long_mod  ok        0.65 cause  le vérin avance difficilement, il manque de gr -> Verin de fixation lent (frottement, grai
+OK          long_mod  ok        0.76 cause  le capteur St est décalé, il détecte le vérin  -> Detecteur de fin de course St ou Rt mal 
+OK          long_mod  ok        0.72 cause  le distributeur met du temps à basculer        -> Distributeur A+/A- lent a commuter
+OK          long_mod  ok        0.77 cause  la minuterie de rognage a été modifiée         -> Temporisation de rognage mal parametree
+OK          court_mod ok        0.75 cause  le réducteur de pression est réglé trop haut,  -> Pression pneumatique trop elevee
+OK          court_mod ok        0.67 cause  le capteur a bougé, il s'allume avant la fin d -> Detecteur de fin de course St ou Rt dere [degre mesure]
+OK          court_sev ok        0.69 cause  le voyant du capteur Rt ne s'éteint jamais     -> Detecteur de fin de course colle ou en c [degre mesure]
+OK          court_sev ok        0.74 cause  le vérin s'arrête au milieu de sa course       -> Course du verin non effectuee
+OK          court_sev ok        0.68 cause  la machine serre sans câble                    -> Cable absent : serrage a vide
+
+OK 15 | FAUX-SUR 0 | incertain 0 | total 15
+=== phrases_hors_liste
+OK          long_sev  ok        0.69 organe le vérin est lent, il manque d'huile           -> Verin de fixation bloque en position [degre mesure]
+OK          long_sev  ok        0.72 organe le manomètre indique une pression un peu basse -> Perte d'alimentation pneumatique [degre mesure]
+OK          long_sev  ok        0.74 organe le distributeur bascule avec un léger retard   -> Distributeur A+/A- bloque [degre mesure]
+OK          long_sev  ok        0.70 organe on a réglé la durée de rognage à 5 secondes    -> Temporisation de rognage mal parametree
+OK          long_mod  ok        0.60 organe le tuyau d'air a été arraché                   -> Pression pneumatique insuffisante [degre mesure]
+OK          long_mod  ok        0.72 organe la tige du vérin est complètement bloquée      -> Verin de fixation lent (frottement, grai [degre mesure]
+prudent     rth1      incertain 0.56 organe le câble est coincé dans le guide              -> Relais thermique RTH1 deregle ou defaill
+prudent     rth2      incertain 0.57 organe le disque abrasif est usé                      -> Relais thermique RTH2 deregle ou defaill
+
+OK 6 | FAUX-SUR 0 | incertain 2 | total 8

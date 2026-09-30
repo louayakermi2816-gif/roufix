@@ -1,0 +1,10 @@
+[
+ ["long_sev", "le vérin est lent, il manque d'huile", "Verin de fixation lent (frottement, graissage)"],
+ ["long_sev", "le manomètre indique une pression un peu basse", "Pression pneumatique insuffisante"],
+ ["long_sev", "le distributeur bascule avec un léger retard", "Distributeur A+/A- lent a commuter"],
+ ["long_sev", "on a réglé la durée de rognage à 5 secondes", "Temporisation de rognage mal parametree"],
+ ["long_mod", "le tuyau d'air a été arraché", "Perte d'alimentation pneumatique"],
+ ["long_mod", "la tige du vérin est complètement bloquée", "Verin de fixation bloque en position"],
+ ["rth1", "le câble est coincé dans le guide", "Bourrage ou coincement du cable dans le guide"],
+ ["rth2", "le disque abrasif est usé", "Disque abrasif M1 use : effort de coupe excessif"]
+]

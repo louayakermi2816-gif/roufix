@@ -160,15 +160,26 @@ When an alert is displayed, the operator types what they see or hear
 symptom sheet are turned into meaning vectors; the cause with the highest
 cosine similarity is shown with its action and score. Nothing is
 generated, so nothing can be invented; below a similarity of 0.60 the
-card says the match is uncertain instead of asserting it.
+card says the match is uncertain instead of asserting it. The card only
+answers while the diagnosis it refers to is displayed.
 
-Measured on 19 observations worded differently from the sheets: the right
-cause 18 times, and the one miss was the only answer under the threshold,
-so no wrong cause was ever asserted; about 1 s per analysis. Symptom
-sheets cite the constructor manual where it covers the point (§2.4
-pneumatic lines, §5.2 pressure reducers, §7 maintenance plan); the rest
-is general maintenance knowledge still to be validated by the plant's
-maintenance team. Test scripts and raw results: `docs/essais_ia/`.
+The embedding model tells organs apart (air supply, cylinder, sensor,
+valve, cable) far better than degrees of the same fault ("the cylinder is
+slow" against "the cylinder is stuck"), and the degree is what the cycle
+measurement already knows. So for a cycle drift the observation is compared
+with the whole family of causes, both severity levels, and designates the
+organ; the cause displayed is that organ's cause at the measured severity.
+
+Measured on 52 observations worded differently from the sheets (23 of them
+written before the last correction, including 8 whose cause is not in the
+list of the measured severity): 48 right, 3 flagged uncertain, 1 wrong
+answer asserted; about 1 s per analysis. The previous version, which only
+compared with the list of the measured severity, asserted 3 wrong answers
+on the same set. Symptom sheets cite the constructor manual where it covers
+the point (§2.4 pneumatic lines, §5.2 pressure reducers, §7 maintenance
+plan); the rest is general maintenance knowledge still to be validated by
+the plant's maintenance team. Test scripts, phrase sets and raw results:
+`docs/essais_ia/` (`banc_observation.js`).
 
 ## Degraded scenarios validated
 

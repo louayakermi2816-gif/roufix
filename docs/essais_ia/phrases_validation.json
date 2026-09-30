@@ -1,0 +1,17 @@
+[
+ ["long_sev", "le vérin ne bouge plus du tout, il reste sorti", "Verin de fixation bloque en position"],
+ ["long_sev", "la bobine de l'électrovanne est grillée, elle ne fait plus de bruit", "Distributeur A+/A- bloque"],
+ ["long_sev", "la vanne d'arrivée d'air de l'atelier est fermée", "Perte d'alimentation pneumatique"],
+ ["long_sev", "le fil du capteur Rt a été arraché", "Detecteur de fin de course St ou Rt defaillant"],
+ ["long_sev", "un morceau de câble est resté pris dans le serrage", "Bourrage du cable dans la zone de serrage"],
+ ["long_mod", "le raccord du vérin est desserré et laisse passer de l'air", "Pression pneumatique insuffisante"],
+ ["long_mod", "le vérin avance difficilement, il manque de graisse", "Verin de fixation lent (frottement, graissage)"],
+ ["long_mod", "le capteur St est décalé, il détecte le vérin trop tard", "Detecteur de fin de course St ou Rt mal regle"],
+ ["long_mod", "le distributeur met du temps à basculer", "Distributeur A+/A- lent a commuter"],
+ ["long_mod", "la minuterie de rognage a été modifiée", "Temporisation de rognage mal parametree"],
+ ["court_mod", "le réducteur de pression est réglé trop haut, le vérin tape en butée", "Pression pneumatique trop elevee"],
+ ["court_mod", "le capteur a bougé, il s'allume avant la fin de la course", "Detecteur de fin de course St ou Rt deregle"],
+ ["court_sev", "le voyant du capteur Rt ne s'éteint jamais", "Detecteur de fin de course colle ou en court-circuit"],
+ ["court_sev", "le vérin s'arrête au milieu de sa course", "Course du verin non effectuee"],
+ ["court_sev", "la machine serre sans câble", "Cable absent : serrage a vide"]
+]
