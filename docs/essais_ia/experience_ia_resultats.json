@@ -1,0 +1,292 @@
+[
+ {
+  "model": "llama3.2:1b",
+  "nom": "long / moderee",
+  "dt": 35.112,
+  "valide": true,
+  "o": {
+   "raisonnement": "La pression du reseau pneumatique alimentant le verin est probablement la cause de l'erreur de temps de cycle mesure. Les mesures de gravité élevées et les limites de controle pour la pression pneumatique insuffisante sont également des facteurs à prendre en compte. Le graissage et l'etancheite du verin de fixation, ainsi que le detecteur de fin de course St ou Rt mal reglé, peuvent également contribuer à cet error. La temporisation de rognage mal parametree est une autre cause possible.",
+   "causes_probables": [
+    "Pression insuffisante",
+    "Graissage et etancheite du verin de fixation"
+   ],
+   "action_immediate": "Verifier la pression du reseau pneumatique alimentant le verin."
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:1b",
+  "nom": "long / severe",
+  "dt": 19.825,
+  "valide": true,
+  "o": {
+   "raisonnement": "La machine est bloquée par le verin de fixation qui bloque l'accès au moteur M1. Le temps de cycle prolongé et les mesures de gravité élevées indiquent une perte d'alimentation pneumatique, ce qui est un facteur déterminant dans la cause du temps de cycle trop long.",
+   "causes_probables": [
+    "La machine est bloquée par le verin de fixation",
+    "Perte d'alimentation pneumatique"
+   ],
+   "action_immediate": "Consigner la machine et degager le cable de la zone de serrage"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:1b",
+  "nom": "court / moderee",
+  "dt": 29.52,
+  "valide": false
+ },
+ {
+  "model": "llama3.2:1b",
+  "nom": "court / severe",
+  "dt": 27.595,
+  "valide": true,
+  "o": {
+   "raisonnement": "La derive des temps de cycle est due à un problème avec le detecteur de fin de course ou son cablage. Cela signifie que l'ordinateur ne peut pas détecter la fin du cycle correctement, ce qui entraîne une erreur dans la mesure du temps de cycle. Le verin non effectue sa course complete et la présence d'un cable absent a vide le guide, ce qui empêche le système de rognage de fonctionner correctement. Les autres causes ne sont pas directement liées à l'erreur de détection de fin de course.",
+   "causes_probables": [
+    "Detecteur de fin de course ou son cablage",
+    "Course du verin non effectuee"
+   ],
+   "action_immediate": "Vérifier le detecteur de fin de course et son cablage pour détecter toute anomalie. Si cela n'est pas possible, vérifier que le verin effectue sa course complete et que le cable est bien engagé dans le guide."
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:1b",
+  "nom": "defaut RTH1",
+  "dt": 20.488,
+  "valide": true,
+  "o": {
+   "raisonnement": "La machine vient de s'arreter en securite. Le moteur M1 est le principal facteur de l'arret car son disque abrasif a atteint la limite d'utilisation, ce qui provoque une dégradation du fonctionnement.",
+   "causes_probables": [
+    "Disque abrasif M1 use : effort de coupe excessif",
+    "Blocage ou frottement du disque abrasif"
+   ],
+   "action_immediate": "Laisser refroidir M1, puis controler l'usure du disque abrasif"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:1b",
+  "nom": "defaut RTH2",
+  "dt": 19.232,
+  "valide": true,
+  "o": {
+   "raisonnement": "La machine vient de s'arreter en securite. Le moteur M2 est entrainé par le cable et le verin pneumatique de fixation est déclenché, ce qui signifie que la rotation libre du guide n'est pas possible.",
+   "causes_probables": [
+    "Le frein ou point dur sur la ligne d'entrainement",
+    "La section du cable est trop importante pour l'entraînement"
+   ],
+   "action_immediate": "Consigner la machine et dégager le cable du guide"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:latest",
+  "nom": "long / moderee",
+  "dt": 49.515,
+  "valide": true,
+  "o": {
+   "raisonnement": "La derive haute du temps de cycle indique un problème avec le système de rognage qui affecte la durée de l'opération. La gravité modérée suggère qu'il s'agit d'un problème technique plutôt que d'une panne grave.",
+   "causes_probables": [
+    "1. Distributeur A+/A- lent à commuter",
+    "2. Verin de fixation lent (frottement, graissage)"
+   ],
+   "action_immediate": "Controler le reglage de la temporisation de rognage"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:latest",
+  "nom": "long / severe",
+  "dt": 42.922,
+  "valide": true,
+  "o": {
+   "raisonnement": "La derive haute du temps de cycle indique un problème avec le verin de fixation, car il est possible que le verin ne soit pas libéré correctement, entraînant une prolongation du cycle. La gravité élevée et l'ecart relatif important à la moyenne de reference suggèrent une cause grave qui nécessite une attention immédiate.",
+   "causes_probables": [
+    "Verin de fixation bloque en position",
+    "Perte d'alimentation pneumatique"
+   ],
+   "action_immediate": "Consigner la machine et degager le cable de la zone de serrage pour vérifier l'arrivée d'air et la pression du réseau pneumatique"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:latest",
+  "nom": "court / moderee",
+  "dt": 31.518,
+  "valide": true,
+  "o": {
+   "raisonnement": "La derive basse du temps de cycle indique un problème avec le retour (verin A- jusqu'a Rt) car il est trop rapide et ne permet pas au moteur M2 d'atteindre la moyenne de référence. La cause probable est liée à l'un des detecteurs de fin de course St ou Rt.",
+   "causes_probables": [
+    "Detecteur de fin de course St ou Rt deregle",
+    "Pression pneumatique trop élevée"
+   ],
+   "action_immediate": "Controler le reglage des detecteurs de fin de course St et Rt"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:latest",
+  "nom": "court / severe",
+  "dt": 32.393,
+  "valide": true,
+  "o": {
+   "raisonnement": "La derive basse du temps de cycle indique un problème avec le serrage ou le retour, car ces organes sont responsables de la fin de course et de l'entrainement du cable. La gravité severe suggère qu'il est important de trouver une cause rapide pour éviter tout dommage à la machine.",
+   "causes_probables": [
+    "Course du verin non effectuee",
+    "Cable absent : serrage a vide"
+   ],
+   "action_immediate": "Verifier que le verin effectue sa course complete et vérifier la presence et l'engagement du cable dans le guide"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:latest",
+  "nom": "defaut RTH1",
+  "dt": 35.97,
+  "valide": true,
+  "o": {
+   "raisonnement": "L'arret de securite du moteur M1 (disque abrasif) est probablement dû à un blocage ou frottement du disque abrasif, car il n'y a pas eu de signal de ventilation obstruee ni de calibrage incorrect du relais thermique. La cause la plus probable est donc un blocage ou frottement du disque abrasif.",
+   "causes_probables": [
+    "Blocage ou frottement du disque abrasif",
+    "Effort de coupe excessif"
+   ],
+   "action_immediate": "Hors tension, verifier la rotation libre du disque abrasif"
+  },
+  "verdicts": [
+   "ok",
+   "hors-vocabulaire",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:latest",
+  "nom": "defaut RTH2",
+  "dt": 30.652,
+  "valide": true,
+  "o": {
+   "raisonnement": "La cause la plus probable est liée à l'organe RTH2 car il est déclenché et le moteur M2 est identifié comme étant à cause du défaut thermique. Cela suggère que le problème pourrait être lié au relais thermique lui-même.",
+   "causes_probables": [
+    "Relais thermique RTH2 deregle ou defaillant",
+    "Ventilation du moteur M2 obstruee"
+   ],
+   "action_immediate": "Controler le calibrage du relais thermique RTH2"
+  },
+  "verdicts": [
+   "ok",
+   "ok",
+   "ok"
+  ]
+ },
+ {
+  "model": "llama3.2:1b",
+  "variante": "enum",
+  "hist": "graduel",
+  "dt": 15.229,
+  "o": {
+   "causes_probables": [
+    "Pression pneumatique insuffisante",
+    "Verin de fixation lent (frottement, graissage)"
+   ],
+   "action_immediate": "Verifier la pression du reseau pneumatique alimentant le verin"
+  }
+ },
+ {
+  "model": "llama3.2:1b",
+  "variante": "enum",
+  "hist": "brutal",
+  "dt": 9.63,
+  "o": {
+   "causes_probables": [
+    "Pression pneumatique insuffisante",
+    "Verin de fixation lent (frottement, graissage)"
+   ],
+   "action_immediate": "Verifier la pression du reseau pneumatique alimentant le verin"
+  }
+ },
+ {
+  "model": "llama3.2:1b",
+  "variante": "libre",
+  "hist": "graduel",
+  "dt": 25.433,
+  "o": {
+   "raisonnement": "La pression du reseau pneumatique alimentant le verin est probablement l'une des causes principales de la temporisation de rognage trop longue. Les mesures de gravité élevées et les limites de controle LIC 3400 ms / LSC 4600 ms suggèrent que la pression est suffisamment faible pour ne pas dépasser les valeurs minimales exigées par le système. De plus, l'écart a la moyenne (18 %) de la moyenne de reference est significatif et indique une variation importante dans la pression du reseau pneumatique.",
+   "causes_probables": [
+    "Pression du reseau pneumatique alimentant le verin",
+    "Graissage et étanchéité du verin de fixation"
+   ],
+   "action_immediate": "Verifier la pression du reseau pneumatique alimentant le verin"
+  }
+ },
+ {
+  "model": "llama3.2:1b",
+  "variante": "libre",
+  "hist": "brutal",
+  "dt": 31.744,
+  "o": null
+ },
+ {
+  "model": "llama3.2:latest",
+  "variante": "libre",
+  "hist": "graduel",
+  "dt": 40.399,
+  "o": {
+   "raisonnement": "La derive haute du temps de cycle indique un problème avec le retour, car il est trop long et dépasse la limite de contrôle. Le historique des 10 derniers cycles montre une tendance croissante vers ce temps de cycle, ce qui suggère une cause liée à l'organe M2.",
+   "causes_probables": [
+    "Distributeur A+/A- lent a commuter",
+    "Verin de fixation lent (frottement, graissage)"
+   ],
+   "action_immediate": "Controler le reglage de la temporisation de rognage"
+  }
+ },
+ {
+  "model": "llama3.2:latest",
+  "variante": "libre",
+  "hist": "brutal",
+  "dt": 34.013,
+  "o": {
+   "raisonnement": "La derive haute du temps de cycle indique un problème avec le système de rognage, peut-être lié à une temporisation mal parametrée ou à un verin de fixation lent. Il est important de vérifier les paramètres de la machine et de contrôler l'état des organes impliqués.",
+   "causes_probables": [
+    "4. Distributeur A+/A- lent a commuter",
+    "2. Verin de fixation lent (frottement, graissage)"
+   ],
+   "action_immediate": "Controler le reglage de la temporisation de rognage"
+  }
+ }
+]
