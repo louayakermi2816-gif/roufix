@@ -68,7 +68,7 @@ EtatMachine etat_precedent_affichage = RETOUR;
 // bloquée capot ouvert ou en défaut thermique.
 bool securite_active = false;
 
-// Marche du moteur M1 (GRAFCET maitre, etape 1). Armee par S1, perdue a
+// Marche du moteur M1 (GRAFCET G_M, etape 11). Armee par S1, perdue a
 // chaque arret securite : refermer le capot ne relance jamais le disque
 // a lui seul, il faut une nouvelle action volontaire de l'operateur.
 bool m1_en_marche = false;
@@ -321,7 +321,7 @@ void loop() {
       publierEtat("evenement", "ATTENTE", "Securite_Retablie", 0);
     }
 
-    // M1 tourne en continu une fois lance par S1 (GRAFCET maitre, etape 1)
+    // M1 tourne en continu une fois lance par S1 (GRAFCET G_M, etape 11)
     digitalWrite(KM1_PIN, m1_en_marche ? HIGH : LOW);
 
     // ---- Couche evenementielle (1 seule execution par transition) ----
